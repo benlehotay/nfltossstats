@@ -241,62 +241,168 @@ export default function CoinTossAnalytics() {
   return (
     <div className="min-h-screen bg-[#0a0e27]">
       {/* Header */}
-      <header className="bg-[#0f172a] border-b border-gray-800 sticky top-0 z-50">
-        <div className="max-w-[1600px] mx-auto px-6 py-4">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h1 className="text-3xl font-bold text-white mb-1">
-                <span className="bg-gradient-to-r from-blue-400 to-blue-600 bg-clip-text text-transparent">NFLTossStats</span>
-                <span className="text-white">.com</span>
-              </h1>
-              <p className="text-sm text-gray-400">The Ultimate NFL Coin Toss Database</p>
+      <header className="bg-[#0f172a] border-b border-gray-800 sticky top-0 z-50 overflow-hidden">
+
+        {/* Animated yard-line background */}
+        <style>{`
+          @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700&display=swap');
+
+          @keyframes yardScroll {
+            0%   { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+          }
+          @keyframes coinSpin {
+            0%   { transform: rotateY(0deg); }
+            40%  { transform: rotateY(720deg); }
+            55%  { transform: rotateY(810deg); }
+            65%  { transform: rotateY(780deg); }
+            75%  { transform: rotateY(810deg); }
+            85%  { transform: rotateY(795deg); }
+            100% { transform: rotateY(810deg); }
+          }
+          @keyframes coinGlow {
+            0%, 100% { filter: drop-shadow(0 0 6px rgba(250,204,21,0.5)); }
+            50%       { filter: drop-shadow(0 0 18px rgba(250,204,21,0.9)); }
+          }
+          @keyframes headlinePulse {
+            0%, 100% { text-shadow: 0 0 20px rgba(96,165,250,0.3); }
+            50%       { text-shadow: 0 0 40px rgba(96,165,250,0.7), 0 0 80px rgba(96,165,250,0.3); }
+          }
+          @keyframes badgePop {
+            0%   { opacity: 0; transform: scale(0.7) translateY(4px); }
+            100% { opacity: 1; transform: scale(1) translateY(0); }
+          }
+          @keyframes statFadeIn {
+            0%   { opacity: 0; transform: translateY(6px); }
+            100% { opacity: 1; transform: translateY(0); }
+          }
+
+          .headline-text {
+            font-family: 'Bebas Neue', sans-serif;
+            animation: headlinePulse 3s ease-in-out infinite;
+          }
+          .coin-spin {
+            animation: coinSpin 3.5s cubic-bezier(0.23,1,0.32,1) infinite;
+            animation-delay: 0.5s;
+            transform-style: preserve-3d;
+            animation: coinSpin 4s ease-in-out infinite, coinGlow 2s ease-in-out infinite;
+          }
+          .yard-scroll {
+            animation: yardScroll 18s linear infinite;
+          }
+          .stat-badge {
+            animation: badgePop 0.4s cubic-bezier(0.34,1.56,0.64,1) both;
+          }
+          .stat-badge:nth-child(1) { animation-delay: 0.1s; }
+          .stat-badge:nth-child(2) { animation-delay: 0.2s; }
+          .stat-badge:nth-child(3) { animation-delay: 0.3s; }
+        `}</style>
+
+        {/* Scrolling yard lines — decorative layer */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden opacity-[0.06]">
+          <div className="yard-scroll flex h-full" style={{ width: '200%' }}>
+            {[...Array(40)].map((_, i) => (
+              <div key={i} className="flex-shrink-0 w-16 h-full border-r border-white" />
+            ))}
+          </div>
+        </div>
+
+        {/* Subtle green turf gradient strip at bottom */}
+        <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-green-500 to-transparent opacity-60" />
+
+        <div className="max-w-[1600px] mx-auto px-4 md:px-6 py-3 md:py-4 relative">
+          <div className="flex items-center justify-between mb-3 md:mb-4">
+
+            {/* LEFT: Coin + Title block */}
+            <div className="flex items-center gap-3 md:gap-4">
+
+              {/* Animated coin — smaller on mobile */}
+              <div style={{ perspective: '400px' }} className="flex-shrink-0">
+                <svg
+                  className="coin-spin w-9 h-9 md:w-12 md:h-12"
+                  viewBox="0 0 48 48"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <circle cx="24" cy="24" r="23" fill="url(#coinGrad)" stroke="#b45309" strokeWidth="1.5"/>
+                  <circle cx="24" cy="24" r="19" fill="none" stroke="#fcd34d" strokeWidth="0.75" strokeDasharray="3 2" opacity="0.6"/>
+                  <ellipse cx="24" cy="24" rx="10" ry="14" fill="#92400e" stroke="#b45309" strokeWidth="1"/>
+                  <line x1="24" y1="13" x2="24" y2="35" stroke="#fcd34d" strokeWidth="1.2"/>
+                  <line x1="20" y1="19" x2="28" y2="19" stroke="#fcd34d" strokeWidth="1"/>
+                  <line x1="19" y1="23" x2="29" y2="23" stroke="#fcd34d" strokeWidth="1"/>
+                  <line x1="20" y1="27" x2="28" y2="27" stroke="#fcd34d" strokeWidth="1"/>
+                  <defs>
+                    <radialGradient id="coinGrad" cx="35%" cy="30%" r="65%">
+                      <stop offset="0%" stopColor="#fde68a"/>
+                      <stop offset="60%" stopColor="#f59e0b"/>
+                      <stop offset="100%" stopColor="#b45309"/>
+                    </radialGradient>
+                  </defs>
+                </svg>
+              </div>
+
+              {/* Title + tagline */}
+              <div>
+                <h1 className="headline-text leading-none tracking-wide" style={{ fontSize: 'clamp(1.5rem, 5vw, 2.4rem)' }}>
+                  <span style={{
+                    background: 'linear-gradient(135deg, #93c5fd 0%, #60a5fa 40%, #3b82f6 70%, #1d4ed8 100%)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    backgroundClip: 'text',
+                  }}>NFLTossStats</span>
+                  <span style={{ color: '#94a3b8', fontSize: 'clamp(1.1rem, 3.5vw, 1.8rem)' }}>.com</span>
+                </h1>
+
+                {/* Tagline badges — hidden on small mobile, shown md+ */}
+                <div className="hidden sm:flex items-center gap-2 mt-0.5">
+                  <span className="stat-badge inline-flex items-center gap-1 bg-yellow-500/10 border border-yellow-500/30 text-yellow-400 text-[10px] font-semibold tracking-wider px-2 py-0.5 rounded-full uppercase"
+                    style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>
+                    🏈 Every Toss
+                  </span>
+                  <span className="stat-badge inline-flex items-center gap-1 bg-blue-500/10 border border-blue-500/30 text-blue-400 text-[10px] font-semibold tracking-wider px-2 py-0.5 rounded-full uppercase"
+                    style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>
+                    📊 Every Season
+                  </span>
+                  <span className="stat-badge hidden md:inline-flex items-center gap-1 bg-green-500/10 border border-green-500/30 text-green-400 text-[10px] font-semibold tracking-wider px-2 py-0.5 rounded-full uppercase"
+                    style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>
+                    🏆 32 Teams
+                  </span>
+                </div>
+                {/* Minimal tagline on xs only */}
+                <p className="sm:hidden text-[10px] text-gray-500 mt-0.5" style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>
+                  The Ultimate NFL Coin Toss Database
+                </p>
+              </div>
             </div>
-            <div className="flex gap-4">
-              <button
-                onClick={() => {
-                  setCurrentView('analytics');
-                  setSelectedTeams([]);
-                  setSeasonFilter('last5');
-                  setSelectedGameTypes(['Regular Season', 'Postseason']);
-                }}
-                className={`px-4 py-2 rounded-lg font-medium transition ${
-                  currentView === 'analytics'
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-[#1a1f3a] text-gray-400 hover:text-white'
-                }`}
-              >
-                Team Performance
-              </button>
-              <button
-                onClick={() => {
-                  setCurrentView('records');
-                  setSelectedTeams([]);
-                  setSeasonFilter('last5');
-                  setSelectedGameTypes(['Regular Season', 'Postseason']);
-                }}
-                className={`px-4 py-2 rounded-lg font-medium transition ${
-                  currentView === 'records'
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-[#1a1f3a] text-gray-400 hover:text-white'
-                }`}
-              >
-                Records & Streaks
-              </button>
-              <button
-                onClick={() => {
-                  setCurrentView('matchup');
-                  setSelectedTeams([]);
-                  setSeasonFilter('last5');
-                  setSelectedGameTypes(['Regular Season', 'Postseason']);
-                }}
-                className={`px-4 py-2 rounded-lg font-medium transition ${
-                  currentView === 'matchup'
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-[#1a1f3a] text-gray-400 hover:text-white'
-                }`}
-              >
-                Matchup Explorer
-              </button>
+
+            {/* RIGHT: Nav buttons — icon-only on mobile, full label on md+ */}
+            <div className="flex gap-1.5 md:gap-2">
+              {[
+                { view: 'analytics', label: 'Team Performance', icon: '📋' },
+                { view: 'records',   label: 'Records & Streaks', icon: '🏆' },
+                { view: 'matchup',   label: 'Matchup Explorer',  icon: '⚔️' },
+              ].map(({ view, label, icon }) => (
+                <button
+                  key={view}
+                  onClick={() => {
+                    setCurrentView(view);
+                    setSelectedTeams([]);
+                    setSeasonFilter('last5');
+                    setSelectedGameTypes(['Regular Season', 'Postseason']);
+                  }}
+                  style={{ fontFamily: "'Barlow Condensed', sans-serif" }}
+                  title={label}
+                  className={`rounded-lg font-semibold tracking-wide transition-all duration-200 flex items-center gap-1.5
+                    px-2 py-2 md:px-4 md:py-2 text-base md:text-sm
+                    ${currentView === view
+                      ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/50 scale-105'
+                      : 'bg-[#1a1f3a] text-gray-400 hover:text-white hover:bg-[#252d4a] border border-gray-700/50'
+                    }`}
+                >
+                  <span>{icon}</span>
+                  <span className="hidden md:inline">{label}</span>
+                </button>
+              ))}
             </div>
           </div>
 
@@ -352,7 +458,7 @@ export default function CoinTossAnalytics() {
               {/* Game Type Filter */}
               <div>
                 <label className="block text-xs font-medium text-gray-400 mb-2">GAME TYPE</label>
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2">
                   {availableGameTypes.map(type => (
                     <button
                       key={type}
@@ -363,7 +469,7 @@ export default function CoinTossAnalytics() {
                           setSelectedGameTypes([...selectedGameTypes, type]);
                         }
                       }}
-                      className={`px-4 py-2 rounded-md text-sm font-medium transition ${
+                      className={`px-3 py-1.5 rounded-md text-sm font-medium transition ${
                         selectedGameTypes.includes(type)
                           ? 'bg-blue-600 text-white'
                           : 'bg-[#1a1f3a] text-gray-400 hover:bg-[#252b4a]'
@@ -422,7 +528,7 @@ export default function CoinTossAnalytics() {
       </header>
 
       {/* Main Content */}
-      <main className="max-w-[1600px] mx-auto px-6 py-8">
+      <main className="max-w-[1600px] mx-auto px-3 md:px-6 py-4 md:py-8">
         {currentView === 'analytics' && (
           <AnalyticsView
             teamStats={sortedTeamStats}
@@ -492,9 +598,9 @@ export default function CoinTossAnalytics() {
       </main>
       
       {/* Footer */}
-      <footer className="bg-[#0f172a] border-t border-gray-800 mt-12">
-        <div className="max-w-[1600px] mx-auto px-6 py-6">
-          <p className="text-center text-sm text-gray-500">
+      <footer className="bg-[#0f172a] border-t border-gray-800 mt-8 md:mt-12">
+        <div className="max-w-[1600px] mx-auto px-4 md:px-6 py-4 md:py-6">
+          <p className="text-center text-xs md:text-sm text-gray-500">
             NFLTossStats.com is not affiliated with, endorsed by, or officially connected with the National Football League (NFL) or any of its teams. 
             All NFL team names, logos, and data are property of their respective owners.
           </p>
@@ -512,9 +618,9 @@ export default function CoinTossAnalytics() {
 // ============================================================================
 function AnalyticsView({ teamStats, filteredTosses, games, teams, selectedTeams, setSelectedTeams, getTeamData, getGameForToss, sortBy, sortDirection, onSort, onTeamClick }) {
   const [expandedTeam, setExpandedTeam] = useState(null);
-  const [openMenuTeam, setOpenMenuTeam] = useState(null);
   const [expandedOpponent, setExpandedOpponent] = useState(null); // Format: "TEAM-OPPONENT" e.g. "MIN-GB"
   const [clickedGame, setClickedGame] = useState(null); // For game detail modal
+  const [tableView, setTableView] = useState('table'); // 'table' | 'streaks'
   
   // Opponent sorting state - separate for each expanded team
   const [opponentSortBy, setOpponentSortBy] = useState({});
@@ -585,73 +691,104 @@ function AnalyticsView({ teamStats, filteredTosses, games, teams, selectedTeams,
   return (
     <div className="space-y-6">
       {/* Key Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-[#1a1f3a] p-6 rounded-xl border border-gray-800">
-          <div className="text-sm text-gray-400 mb-1">Games Analyzed</div>
-          <div className="text-4xl font-bold text-white">{tossesWithGames.length}</div>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+        <div className="bg-[#1a1f3a] p-4 md:p-6 rounded-xl border border-gray-800">
+          <div className="text-xs md:text-sm text-gray-400 mb-1">Games Analyzed</div>
+          <div className="text-3xl md:text-4xl font-bold text-white">{tossesWithGames.length}</div>
         </div>
-        <div className="bg-[#1a1f3a] p-6 rounded-xl border border-gray-800">
-          <div className="text-sm text-gray-400 mb-1">Won Game After Toss Win</div>
-          <div className="text-4xl font-bold text-blue-400">{winCorrelation}%</div>
+        <div className="bg-[#1a1f3a] p-4 md:p-6 rounded-xl border border-gray-800">
+          <div className="text-xs md:text-sm text-gray-400 mb-1">Won Game After Toss Win</div>
+          <div className="text-3xl md:text-4xl font-bold text-blue-400">{winCorrelation}%</div>
         </div>
-        <div className="bg-[#1a1f3a] p-6 rounded-xl border border-gray-800">
-          <div className="text-sm text-gray-400 mb-1">Defer Rate</div>
-          <div className="text-4xl font-bold text-purple-400">{deferRate}%</div>
+        <div className="bg-[#1a1f3a] p-4 md:p-6 rounded-xl border border-gray-800">
+          <div className="text-xs md:text-sm text-gray-400 mb-1">Defer Rate</div>
+          <div className="text-3xl md:text-4xl font-bold text-purple-400">{deferRate}%</div>
         </div>
-        <div className="bg-[#1a1f3a] p-6 rounded-xl border border-gray-800">
-          <div className="text-sm text-gray-400 mb-1">Total Tosses</div>
-          <div className="text-4xl font-bold text-green-400">{filteredTosses.length}</div>
+        <div className="bg-[#1a1f3a] p-4 md:p-6 rounded-xl border border-gray-800">
+          <div className="text-xs md:text-sm text-gray-400 mb-1">Total Tosses</div>
+          <div className="text-3xl md:text-4xl font-bold text-green-400">{filteredTosses.length}</div>
         </div>
       </div>
 
       {/* Main Team Stats Table */}
       <div className="bg-[#1a1f3a] rounded-xl border border-gray-800 overflow-hidden">
-        <div className="p-4 border-b border-gray-800">
-          <h2 className="text-xl font-bold text-white">Team Performance</h2>
-          <p className="text-sm text-gray-400">Click any column header to sort • Click team row to expand opponent breakdown</p>
+        <div className="p-3 md:p-4 border-b border-gray-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <h2 className="text-lg md:text-xl font-bold text-white">Team Performance</h2>
+            <p className="text-xs md:text-sm text-gray-400 hidden sm:block">
+              {tableView === 'table'
+                ? 'Click any column header to sort • Click team row to expand opponent breakdown'
+                : 'Longest win streaks vs longest loss streaks • Click a team to view their team page'}
+            </p>
+          </div>
+          {/* Toggle */}
+          <div className="flex items-center bg-[#0f172a] rounded-lg p-1 flex-shrink-0 self-start sm:self-auto">
+            <button
+              onClick={() => setTableView('table')}
+              className={`px-3 md:px-4 py-1.5 rounded-md text-xs md:text-sm font-medium transition ${
+                tableView === 'table'
+                  ? 'bg-blue-600 text-white'
+                  : 'text-gray-400 hover:text-white'
+              }`}
+            >
+              📋 Team Table
+            </button>
+            <button
+              onClick={() => setTableView('streaks')}
+              className={`px-3 md:px-4 py-1.5 rounded-md text-xs md:text-sm font-medium transition ${
+                tableView === 'streaks'
+                  ? 'bg-blue-600 text-white'
+                  : 'text-gray-400 hover:text-white'
+              }`}
+            >
+              🔥 Streak Showdown
+            </button>
+          </div>
         </div>
-        </div>
+        {tableView === 'table' && (
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-[#0f172a] border-b border-gray-800">
               <tr>
-                <th className="px-4 py-3 text-left">
-                  <button onClick={() => onSort('abbr')} className="flex items-center gap-2 text-xs font-bold text-gray-400 uppercase hover:text-white transition">
+                <th className="px-3 md:px-4 py-3 text-left">
+                  <button onClick={() => onSort('abbr')} className="flex items-center gap-1 md:gap-2 text-xs font-bold text-gray-400 uppercase hover:text-white transition">
                     Team <SortIcon column="abbr" />
                   </button>
                 </th>
-                <th className="px-4 py-3 text-center">
-                  <button onClick={() => onSort('totalTosses')} className="flex items-center justify-center gap-2 text-xs font-bold text-gray-400 uppercase hover:text-white transition w-full">
+                <th className="px-2 md:px-4 py-3 text-center hidden sm:table-cell">
+                  <button onClick={() => onSort('totalTosses')} className="flex items-center justify-center gap-1 md:gap-2 text-xs font-bold text-gray-400 uppercase hover:text-white transition w-full">
                     Tosses <SortIcon column="totalTosses" />
                   </button>
                 </th>
-                <th className="px-4 py-3 text-center">
-                  <button onClick={() => onSort('tossWins')} className="flex items-center justify-center gap-2 text-xs font-bold text-gray-400 uppercase hover:text-white transition w-full">
-                    Toss Wins <SortIcon column="tossWins" />
+                <th className="px-2 md:px-4 py-3 text-center hidden sm:table-cell">
+                  <button onClick={() => onSort('tossWins')} className="flex items-center justify-center gap-1 md:gap-2 text-xs font-bold text-gray-400 uppercase hover:text-white transition w-full">
+                    Wins <SortIcon column="tossWins" />
                   </button>
                 </th>
-                <th className="px-4 py-3 text-center">
-                  <button onClick={() => onSort('tossWinPct')} className="flex items-center justify-center gap-2 text-xs font-bold text-gray-400 uppercase hover:text-white transition w-full">
-                    Toss Win % <SortIcon column="tossWinPct" />
+                <th className="px-2 md:px-4 py-3 text-center">
+                  <button onClick={() => onSort('tossWinPct')} className="flex items-center justify-center gap-1 md:gap-2 text-xs font-bold text-gray-400 uppercase hover:text-white transition w-full">
+                    <span className="hidden md:inline">Toss Win %</span>
+                    <span className="md:hidden">Toss%</span>
+                    <SortIcon column="tossWinPct" />
                   </button>
                 </th>
-                <th className="px-4 py-3 text-center">
-                  <button onClick={() => onSort('gameWinPct')} className="flex items-center justify-center gap-2 text-xs font-bold text-gray-400 uppercase hover:text-white transition w-full">
+                <th className="px-2 md:px-4 py-3 text-center hidden md:table-cell">
+                  <button onClick={() => onSort('gameWinPct')} className="flex items-center justify-center gap-1 md:gap-2 text-xs font-bold text-gray-400 uppercase hover:text-white transition w-full">
                     Won Game After Toss Win % <SortIcon column="gameWinPct" />
                   </button>
                 </th>
-                <th className="px-4 py-3 text-center">
-                  <button onClick={() => onSort('deferPct')} className="flex items-center justify-center gap-2 text-xs font-bold text-gray-400 uppercase hover:text-white transition w-full">
+                <th className="px-2 md:px-4 py-3 text-center hidden lg:table-cell">
+                  <button onClick={() => onSort('deferPct')} className="flex items-center justify-center gap-1 md:gap-2 text-xs font-bold text-gray-400 uppercase hover:text-white transition w-full">
                     Defer % <SortIcon column="deferPct" />
                   </button>
                 </th>
-                <th className="px-4 py-3 text-center">
-                  <button onClick={() => onSort('currentStreak')} className="flex items-center justify-center gap-2 text-xs font-bold text-gray-400 uppercase hover:text-white transition w-full">
+                <th className="px-2 md:px-4 py-3 text-center">
+                  <button onClick={() => onSort('currentStreak')} className="flex items-center justify-center gap-1 md:gap-2 text-xs font-bold text-gray-400 uppercase hover:text-white transition w-full">
                     Streak <SortIcon column="currentStreak" />
                   </button>
                 </th>
-                <th className="px-4 py-3 text-center w-16">
-                  <span className="text-xs font-bold text-gray-400 uppercase"></span>
+                <th className="px-2 md:px-4 py-3 text-center w-10 md:w-16">
+                  <span className="text-xs font-bold text-gray-400 uppercase hidden sm:inline">Page</span>
                 </th>
               </tr>
             </thead>
@@ -659,7 +796,6 @@ function AnalyticsView({ teamStats, filteredTosses, games, teams, selectedTeams,
               {displayedTeamStats.map((team, idx) => {
                 const teamData = getTeamData(team.abbr);
                 const isExpanded = expandedTeam === team.abbr;
-                const isMenuOpen = openMenuTeam === team.abbr;
                 
                 // Calculate opponent stats for this team
                 let opponentStats = calculateOpponentStatsForTeam(filteredTosses, team.abbr, getGameForToss);
@@ -745,35 +881,35 @@ function AnalyticsView({ teamStats, filteredTosses, games, teams, selectedTeams,
                       className="hover:bg-[#0f172a] transition cursor-pointer"
                       onClick={() => setExpandedTeam(isExpanded ? null : team.abbr)}
                     >
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-3">
+                      <td className="px-3 md:px-4 py-3">
+                        <div className="flex items-center gap-2 md:gap-3">
                           {teamData && (
                             <img 
                               src={teamData.logo_url} 
                               alt={teamData.name}
-                              className="w-8 h-8 object-contain"
+                              className="w-7 h-7 md:w-8 md:h-8 object-contain flex-shrink-0"
                             />
                           )}
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2">
-                              <span className="font-bold text-white">{team.abbr}</span>
-                              <span className="text-gray-400 text-sm">{isExpanded ? '▼' : '▶'}</span>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-1 md:gap-2">
+                              <span className="font-bold text-white text-sm md:text-base">{team.abbr}</span>
+                              <span className="text-gray-400 text-xs">{isExpanded ? '▼' : '▶'}</span>
                             </div>
-                            <div className="text-xs text-gray-400">{teamData?.name}</div>
+                            <div className="text-xs text-gray-400 truncate hidden sm:block">{teamData?.name}</div>
                           </div>
                         </div>
                       </td>
-                      <td className="px-4 py-3 text-center text-gray-300">{team.totalTosses}</td>
-                      <td className="px-4 py-3 text-center text-gray-300">{team.tossWins}</td>
-                      <td className="px-4 py-3 text-center">
-                        <span className="text-blue-400 font-semibold">{team.tossWinPct}%</span>
+                      <td className="px-2 md:px-4 py-3 text-center text-gray-300 text-sm hidden sm:table-cell">{team.totalTosses}</td>
+                      <td className="px-2 md:px-4 py-3 text-center text-gray-300 text-sm hidden sm:table-cell">{team.tossWins}</td>
+                      <td className="px-2 md:px-4 py-3 text-center">
+                        <span className="text-blue-400 font-semibold text-sm">{team.tossWinPct}%</span>
                       </td>
-                      <td className="px-4 py-3 text-center">
-                        <span className="text-green-400 font-semibold">{team.gameWinPct}%</span>
+                      <td className="px-2 md:px-4 py-3 text-center hidden md:table-cell">
+                        <span className="text-green-400 font-semibold text-sm">{team.gameWinPct}%</span>
                       </td>
-                      <td className="px-4 py-3 text-center text-gray-300">{team.deferPct}%</td>
-                      <td className="px-4 py-3 text-center">
-                        <span className={`px-3 py-1 text-xs font-bold rounded-full ${
+                      <td className="px-2 md:px-4 py-3 text-center text-gray-300 text-sm hidden lg:table-cell">{team.deferPct}%</td>
+                      <td className="px-2 md:px-4 py-3 text-center">
+                        <span className={`px-2 md:px-3 py-1 text-xs font-bold rounded-full ${
                           team.currentStreak > 0 
                             ? 'bg-green-900 text-green-300' 
                             : 'bg-red-900 text-red-300'
@@ -781,40 +917,19 @@ function AnalyticsView({ teamStats, filteredTosses, games, teams, selectedTeams,
                           {team.currentStreak > 0 ? `W${team.currentStreak}` : `L${Math.abs(team.currentStreak)}`}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-center relative">
+                      <td className="px-2 md:px-4 py-3 text-center relative">
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            setOpenMenuTeam(isMenuOpen ? null : team.abbr);
+                            onTeamClick(team.abbr);
                           }}
-                          className="text-gray-400 hover:text-white transition text-xl px-2"
+                          className="text-gray-500 hover:text-blue-400 transition-colors px-2 py-1 rounded hover:bg-blue-900/20"
+                          title={`Go to ${team.abbr} Team Page`}
                         >
-                          ⋮
+                          <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                          </svg>
                         </button>
-                        {isMenuOpen && (
-                          <>
-                            <div 
-                              className="fixed inset-0 z-10" 
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setOpenMenuTeam(null);
-                              }}
-                            />
-                            <div className="absolute right-0 top-full mt-1 bg-[#0f172a] border border-gray-700 rounded-lg shadow-xl z-20 min-w-[200px]">
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setOpenMenuTeam(null);
-                                  onTeamClick(team.abbr);
-                                }}
-                                className="w-full px-4 py-2 text-left text-sm text-white hover:bg-[#1a1f3a] transition flex items-center gap-2"
-                              >
-                                <span>📊</span>
-                                <span>View Full Analysis</span>
-                              </button>
-                            </div>
-                          </>
-                        )}
                       </td>
                     </tr>
                     
@@ -1102,9 +1217,10 @@ function AnalyticsView({ teamStats, filteredTosses, games, teams, selectedTeams,
             </tbody>
           </table>
         </div>
-        
-        {/* Game Detail Modal */}
-        {clickedGame && (
+        )}
+
+        {/* Game Detail Modal — only relevant in table view */}
+        {tableView === 'table' && clickedGame && (
           <GameDetailModal 
             clickedCell={clickedGame}
             teamAbbr={expandedTeam}
@@ -1112,90 +1228,103 @@ function AnalyticsView({ teamStats, filteredTosses, games, teams, selectedTeams,
             onClose={() => setClickedGame(null)}
           />
         )}
-        
-        {/* Team Streak Comparison - Mirrored Bar Chart */}
-        <div className="bg-[#1a1f3a] rounded-xl p-6 border border-gray-800 mt-6">
-          <h3 className="text-xl font-bold text-white mb-2">Team Streak Showdown</h3>
-          <p className="text-sm text-gray-400 mb-4">Longest win streaks vs longest loss streaks for all teams</p>
-          
-          <div className="space-y-1">
-            {(() => {
-              // Calculate streaks for each team from filteredTosses
-              const teamStreaks = {};
-              
-              teams.forEach(team => {
-                const teamTosses = filteredTosses.filter(t => 
-                  t.winner === team.abbreviation || t.loser === team.abbreviation
-                );
+
+        {/* Team Streak Showdown — shown when streak tab is active */}
+        {tableView === 'streaks' && (
+          <div className="p-6">
+            {/* Legend */}
+            <div className="flex items-center justify-center gap-6 mb-5 text-xs text-gray-400">
+              <div className="flex items-center gap-1.5">
+                <div className="w-4 h-3 rounded bg-gradient-to-l from-red-600 to-red-700"></div>
+                <span>Longest Loss Streak</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <div className="w-4 h-3 rounded bg-gradient-to-r from-green-600 to-green-700"></div>
+                <span>Longest Win Streak</span>
+              </div>
+              <span className="text-gray-500">• Click a team logo to view their team page</span>
+            </div>
+
+            <div className="space-y-1">
+              {(() => {
+                // Calculate streaks for each team from filteredTosses
+                const teamStreaks = {};
                 
-                // Skip teams with no tosses in selected range
-                if (teamTosses.length === 0) return;
-                
-                // Sort chronologically
-                const sorted = [...teamTosses].sort((a, b) => {
-                  if (a.game_date && b.game_date) {
-                    const dateCompare = new Date(a.game_date) - new Date(b.game_date);
-                    if (dateCompare !== 0) return dateCompare;
+                teams.forEach(team => {
+                  const teamTosses = filteredTosses.filter(t => 
+                    t.winner === team.abbreviation || t.loser === team.abbreviation
+                  );
+                  
+                  if (teamTosses.length === 0) return;
+                  
+                  const sorted = [...teamTosses].sort((a, b) => {
+                    if (a.game_date && b.game_date) {
+                      const dateCompare = new Date(a.game_date) - new Date(b.game_date);
+                      if (dateCompare !== 0) return dateCompare;
+                    }
+                    if (a.season !== b.season) return a.season - b.season;
+                    if (a.week !== b.week) return a.week - b.week;
+                    if (a.toss_type === 'Regular' && b.toss_type === 'Overtime') return -1;
+                    if (a.toss_type === 'Overtime' && b.toss_type === 'Regular') return 1;
+                    return 0;
+                  });
+                  
+                  let currentWinStreak = 0;
+                  let maxWinStreak = 0;
+                  let currentLossStreak = 0;
+                  let maxLossStreak = 0;
+                  
+                  sorted.forEach(toss => {
+                    if (toss.winner === team.abbreviation) {
+                      currentWinStreak++;
+                      maxWinStreak = Math.max(maxWinStreak, currentWinStreak);
+                      currentLossStreak = 0;
+                    } else {
+                      currentLossStreak++;
+                      maxLossStreak = Math.max(maxLossStreak, currentLossStreak);
+                      currentWinStreak = 0;
+                    }
+                  });
+                  
+                  if (maxWinStreak > 0 || maxLossStreak > 0) {
+                    teamStreaks[team.abbreviation] = {
+                      abbr: team.abbreviation,
+                      maxWin: maxWinStreak,
+                      maxLoss: maxLossStreak,
+                      logo: team.logo_url
+                    };
                   }
-                  if (a.season !== b.season) return a.season - b.season;
-                  if (a.week !== b.week) return a.week - b.week;
-                  // Regular before OT
-                  if (a.toss_type === 'Regular' && b.toss_type === 'Overtime') return -1;
-                  if (a.toss_type === 'Overtime' && b.toss_type === 'Regular') return 1;
-                  return 0;
                 });
                 
-                let currentWinStreak = 0;
-                let maxWinStreak = 0;
-                let currentLossStreak = 0;
-                let maxLossStreak = 0;
+                const sortedTeams = Object.values(teamStreaks).sort((a, b) => b.maxWin - a.maxWin);
                 
-                sorted.forEach(toss => {
-                  if (toss.winner === team.abbreviation) {
-                    currentWinStreak++;
-                    maxWinStreak = Math.max(maxWinStreak, currentWinStreak);
-                    currentLossStreak = 0;
-                  } else {
-                    currentLossStreak++;
-                    maxLossStreak = Math.max(maxLossStreak, currentLossStreak);
-                    currentWinStreak = 0;
-                  }
-                });
-                
-                // Only include teams that have at least one streak (win or loss)
-                if (maxWinStreak > 0 || maxLossStreak > 0) {
-                  teamStreaks[team.abbreviation] = {
-                    abbr: team.abbreviation,
-                    maxWin: maxWinStreak,
-                    maxLoss: maxLossStreak,
-                    logo: team.logo_url
-                  };
+                if (sortedTeams.length === 0) {
+                  return <div className="text-gray-400 text-center py-4">No streak data available for selected filters</div>;
                 }
-              });
-              
-              // Sort by longest win streak
-              const sortedTeams = Object.values(teamStreaks).sort((a, b) => b.maxWin - a.maxWin);
-              
-              // Only proceed if we have teams with data
-              if (sortedTeams.length === 0) {
-                return <div className="text-gray-400 text-center py-4">No streak data available for selected filters</div>;
-              }
-              
-              // Find GLOBAL max value for consistent scaling
-              const globalMaxWin = Math.max(...sortedTeams.map(t => t.maxWin), 1);
-              const globalMaxLoss = Math.max(...sortedTeams.map(t => t.maxLoss), 1);
-              const globalMax = Math.max(globalMaxWin, globalMaxLoss);
-              
-              return sortedTeams.map(team => {
-                return (
-                  <div key={team.abbr} className="flex items-center gap-2 py-1.5 px-3 bg-[#0f172a] rounded-lg hover:bg-[#1a1f3a] transition">
-                    {/* Team Logo and Name */}
-                    <div className="flex items-center gap-2 w-24 flex-shrink-0">
+                
+                const globalMaxWin = Math.max(...sortedTeams.map(t => t.maxWin), 1);
+                const globalMaxLoss = Math.max(...sortedTeams.map(t => t.maxLoss), 1);
+                const globalMax = Math.max(globalMaxWin, globalMaxLoss);
+                
+                return sortedTeams.map(team => (
+                  <div key={team.abbr} className="flex items-center gap-2 py-1.5 px-3 bg-[#0f172a] rounded-lg hover:bg-[#151b30] transition">
+                    {/* Clickable Team Logo + Name */}
+                    <button
+                      onClick={() => onTeamClick(team.abbr)}
+                      className="flex items-center gap-2 w-24 flex-shrink-0 group"
+                      title={`View ${team.abbr} team page`}
+                    >
                       {team.logo && (
-                        <img src={team.logo} alt={team.abbr} className="w-5 h-5 object-contain" />
+                        <img
+                          src={team.logo}
+                          alt={team.abbr}
+                          className="w-6 h-6 object-contain group-hover:scale-110 transition-transform"
+                        />
                       )}
-                      <span className="text-white font-semibold text-xs">{team.abbr}</span>
-                    </div>
+                      <span className="text-white font-semibold text-xs group-hover:text-blue-400 transition-colors underline-offset-2 group-hover:underline">
+                        {team.abbr}
+                      </span>
+                    </button>
                     
                     {/* Mirrored Bar Chart */}
                     <div className="flex-1 flex items-center gap-1">
@@ -1229,12 +1358,12 @@ function AnalyticsView({ teamStats, filteredTosses, games, teams, selectedTeams,
                       </div>
                     </div>
                   </div>
-                );
-              });
-            })()}
+                ));
+              })()}
+            </div>
           </div>
-        </div>
-        
+        )}
+      </div>
     </div>
   );
 }
