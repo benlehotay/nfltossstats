@@ -9,6 +9,21 @@ import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, L
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
+// Helper function to format dates without timezone shift
+// Dates from DB are stored as YYYY-MM-DD and should display as-is
+function formatGameDate(dateString) {
+  if (!dateString) return '';
+  // Parse as UTC to prevent timezone conversion
+  const [year, month, day] = dateString.split('-').map(Number);
+  const date = new Date(Date.UTC(year, month - 1, day));
+  return date.toLocaleDateString('en-US', { 
+    timeZone: 'UTC',
+    year: 'numeric', 
+    month: 'numeric', 
+    day: 'numeric' 
+  });
+}
+
 export default function CoinTossAnalytics() {
   // Data state
   const [tosses, setTosses] = useState([]);
@@ -1152,7 +1167,7 @@ function AnalyticsView({ teamStats, filteredTosses, games, teams, selectedTeams,
                                                           <div className="flex items-center gap-4">
                                                             <div className={`w-2 h-12 rounded ${teamWonToss ? 'bg-green-500' : 'bg-red-500'}`}></div>
                                                             <div className="text-gray-400 w-32">
-                                                              {toss.game_date && new Date(toss.game_date).toLocaleDateString()}
+                                                              {toss.game_date && formatGameDate(toss.game_date)}
                                                               <div className="text-xs">{toss.season} Wk {toss.week}</div>
                                                               <div className="text-xs">
                                                                 {toss.game_type}
@@ -1932,7 +1947,7 @@ function MatchupDetails({ team1, team2, tosses, games, getTeamData, getGameForTo
                         }}
                       ></div>
                       <div className="text-sm text-gray-400 w-32">
-                        {toss.game_date && new Date(toss.game_date).toLocaleDateString()}
+                        {toss.game_date && formatGameDate(toss.game_date)}
                         <div className="text-xs">{toss.season} Wk {toss.week}</div>
                         <div className="text-xs">
                           {toss.game_type}
@@ -2334,40 +2349,40 @@ function TeamDetailView({ teamAbbr, tosses, games, teams, getTeamData, getGameFo
       {/* Back Button */}
       <button
         onClick={onBack}
-        className="px-4 py-2 bg-[#1a1f3a] text-white rounded-lg hover:bg-[#0f172a] transition"
+        className="px-3 md:px-4 py-2 bg-[#1a1f3a] text-white text-sm md:text-base rounded-lg hover:bg-[#0f172a] transition"
       >
         ← Back
       </button>
 
       {/* Team Header */}
       <div 
-        className="rounded-2xl p-12 border"
+        className="rounded-xl md:rounded-2xl p-4 md:p-8 lg:p-12 border"
         style={{
           background: `linear-gradient(135deg, ${teamData.primary_color}22 0%, ${teamData.secondary_color}22 100%)`,
           borderColor: `${teamData.primary_color}44`
         }}
       >
-        <div className="flex items-center gap-8">
+        <div className="flex flex-col sm:flex-row items-center gap-4 md:gap-6 lg:gap-8">
           <img 
             src={teamData.logo_url} 
             alt={teamData.name}
-            className="w-40 h-40 object-contain"
+            className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 lg:w-40 lg:h-40 object-contain flex-shrink-0"
           />
-          <div>
-            <h1 className="text-5xl font-bold text-white mb-2">{teamData.name}</h1>
-            <p className="text-2xl text-gray-300 mb-4">{teamData.city}, {teamData.state}</p>
-            <div className="flex gap-4">
-              <div className="px-4 py-2 bg-black/30 rounded-lg">
-                <div className="text-sm text-gray-400">Conference</div>
-                <div className="text-lg font-bold text-white">{teamData.conference}</div>
+          <div className="text-center sm:text-left flex-1">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-1 md:mb-2">{teamData.name}</h1>
+            <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-gray-300 mb-3 md:mb-4">{teamData.city}, {teamData.state}</p>
+            <div className="flex flex-wrap gap-2 md:gap-4 justify-center sm:justify-start">
+              <div className="px-3 md:px-4 py-1.5 md:py-2 bg-black/30 rounded-lg">
+                <div className="text-xs md:text-sm text-gray-400">Conference</div>
+                <div className="text-sm md:text-base lg:text-lg font-bold text-white">{teamData.conference}</div>
               </div>
-              <div className="px-4 py-2 bg-black/30 rounded-lg">
-                <div className="text-sm text-gray-400">Division</div>
-                <div className="text-lg font-bold text-white">{teamData.division}</div>
+              <div className="px-3 md:px-4 py-1.5 md:py-2 bg-black/30 rounded-lg">
+                <div className="text-xs md:text-sm text-gray-400">Division</div>
+                <div className="text-sm md:text-base lg:text-lg font-bold text-white">{teamData.division}</div>
               </div>
-              <div className="px-4 py-2 bg-black/30 rounded-lg">
-                <div className="text-sm text-gray-400">Active Streak</div>
-                <div className={`text-lg font-bold ${
+              <div className="px-3 md:px-4 py-1.5 md:py-2 bg-black/30 rounded-lg">
+                <div className="text-xs md:text-sm text-gray-400">Active Streak</div>
+                <div className={`text-sm md:text-base lg:text-lg font-bold ${
                   currentStreak > 0 ? 'text-green-400' : 
                   currentStreak < 0 ? 'text-red-400' : 
                   'text-gray-400'
@@ -2383,65 +2398,65 @@ function TeamDetailView({ teamAbbr, tosses, games, teams, getTeamData, getGameFo
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="bg-[#1a1f3a] p-6 rounded-xl border border-gray-800">
-          <div className="text-sm text-gray-400 mb-2">Total Tosses</div>
-          <div className="text-4xl font-bold text-white">{filteredTeamTosses.length}</div>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6">
+        <div className="bg-[#1a1f3a] p-4 md:p-6 rounded-xl border border-gray-800">
+          <div className="text-xs md:text-sm text-gray-400 mb-1 md:mb-2">Total Tosses</div>
+          <div className="text-2xl md:text-3xl lg:text-4xl font-bold text-white">{filteredTeamTosses.length}</div>
         </div>
-        <div className="bg-[#1a1f3a] p-6 rounded-xl border border-gray-800">
-          <div className="text-sm text-gray-400 mb-2">Toss Win Rate</div>
-          <div className="text-4xl font-bold text-blue-400">{tossWinPct}%</div>
+        <div className="bg-[#1a1f3a] p-4 md:p-6 rounded-xl border border-gray-800">
+          <div className="text-xs md:text-sm text-gray-400 mb-1 md:mb-2">Toss Win Rate</div>
+          <div className="text-2xl md:text-3xl lg:text-4xl font-bold text-blue-400">{tossWinPct}%</div>
         </div>
-        <div className="bg-[#1a1f3a] p-6 rounded-xl border border-gray-800">
-          <div className="text-sm text-gray-400 mb-2">Game Win % (After Toss Win)</div>
-          <div className="text-4xl font-bold text-green-400">{gameWinPct}%</div>
+        <div className="bg-[#1a1f3a] p-4 md:p-6 rounded-xl border border-gray-800">
+          <div className="text-xs md:text-sm text-gray-400 mb-1 md:mb-2">Game Win % (After Toss Win)</div>
+          <div className="text-2xl md:text-3xl lg:text-4xl font-bold text-green-400">{gameWinPct}%</div>
         </div>
-        <div className="bg-[#1a1f3a] p-6 rounded-xl border border-gray-800">
-          <div className="text-sm text-gray-400 mb-2">Defer Rate</div>
-          <div className="text-4xl font-bold text-purple-400">{deferPct}%</div>
+        <div className="bg-[#1a1f3a] p-4 md:p-6 rounded-xl border border-gray-800">
+          <div className="text-xs md:text-sm text-gray-400 mb-1 md:mb-2">Defer Rate</div>
+          <div className="text-2xl md:text-3xl lg:text-4xl font-bold text-purple-400">{deferPct}%</div>
         </div>
       </div>
 
       {/* Actual Game Records */}
-      <div className="bg-[#1a1f3a] rounded-xl p-6 border border-gray-800">
-        <h3 className="text-lg font-bold text-white mb-4">Actual Game Record</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="bg-[#1a1f3a] rounded-xl p-4 md:p-6 border border-gray-800">
+        <h3 className="text-base md:text-lg font-bold text-white mb-3 md:mb-4">Actual Game Record</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6">
           {/* Overall Record */}
           <div className="text-center">
-            <div className="text-sm text-gray-400 mb-2">Overall</div>
-            <div className="text-3xl font-bold text-white mb-1">
+            <div className="text-xs md:text-sm text-gray-400 mb-1 md:mb-2">Overall</div>
+            <div className="text-2xl md:text-3xl font-bold text-white mb-1">
               {gameRecords.overall.wins}-{gameRecords.overall.losses}
               {gameRecords.overall.ties > 0 && `-${gameRecords.overall.ties}`}
             </div>
-            <div className="text-lg text-gray-400">({gameRecords.overall.winPct.toFixed(3)})</div>
+            <div className="text-sm md:text-base lg:text-lg text-gray-400">({gameRecords.overall.winPct.toFixed(3)})</div>
           </div>
           
           {/* Home Record */}
           <div className="text-center">
-            <div className="text-sm text-gray-400 mb-2">Home</div>
-            <div className="text-3xl font-bold text-white mb-1">
+            <div className="text-xs md:text-sm text-gray-400 mb-1 md:mb-2">Home</div>
+            <div className="text-2xl md:text-3xl font-bold text-white mb-1">
               {gameRecords.home.wins}-{gameRecords.home.losses}
               {gameRecords.home.ties > 0 && `-${gameRecords.home.ties}`}
             </div>
-            <div className="text-lg text-gray-400">({gameRecords.home.winPct.toFixed(3)})</div>
+            <div className="text-sm md:text-base lg:text-lg text-gray-400">({gameRecords.home.winPct.toFixed(3)})</div>
           </div>
           
           {/* Away Record */}
           <div className="text-center">
-            <div className="text-sm text-gray-400 mb-2">Away</div>
-            <div className="text-3xl font-bold text-white mb-1">
+            <div className="text-xs md:text-sm text-gray-400 mb-1 md:mb-2">Away</div>
+            <div className="text-2xl md:text-3xl font-bold text-white mb-1">
               {gameRecords.away.wins}-{gameRecords.away.losses}
               {gameRecords.away.ties > 0 && `-${gameRecords.away.ties}`}
             </div>
-            <div className="text-lg text-gray-400">({gameRecords.away.winPct.toFixed(3)})</div>
+            <div className="text-sm md:text-base lg:text-lg text-gray-400">({gameRecords.away.winPct.toFixed(3)})</div>
           </div>
         </div>
       </div>
 
       {/* Filters */}
-      <div className="bg-[#1a1f3a] rounded-xl p-6 border border-gray-800">
-        <h3 className="text-lg font-bold text-white mb-4">Filters</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="bg-[#1a1f3a] rounded-xl p-4 md:p-6 border border-gray-800">
+        <h3 className="text-base md:text-lg font-bold text-white mb-3 md:mb-4">Filters</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
           {/* Season Filter */}
           <div>
             <label className="block text-xs font-medium text-gray-400 mb-2">SEASON RANGE</label>
@@ -2521,23 +2536,23 @@ function TeamDetailView({ teamAbbr, tosses, games, teams, getTeamData, getGameFo
       </div>
 
       {/* Toss Performance Timeline (Gantt Chart) */}
-      <div className="bg-[#1a1f3a] rounded-xl p-6 border border-gray-800">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-2xl font-bold text-white">Performance Timeline</h3>
-          <div className="flex gap-2 bg-[#0f172a] rounded-lg p-1">
+      <div className="bg-[#1a1f3a] rounded-xl p-4 md:p-6 border border-gray-800">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+          <h3 className="text-xl md:text-2xl font-bold text-white">Performance Timeline</h3>
+          <div className="flex gap-1.5 md:gap-2 bg-[#0f172a] rounded-lg p-1 self-start sm:self-auto">
             <button
               onClick={() => setGanttMode('toss')}
-              className={`px-4 py-2 rounded-md font-medium transition ${
+              className={`px-3 md:px-4 py-1.5 md:py-2 rounded-md text-xs md:text-sm font-medium transition ${
                 ganttMode === 'toss' 
                   ? 'bg-blue-600 text-white' 
                   : 'text-gray-400 hover:text-white'
               }`}
             >
-              Coin Toss Results
+              Coin Toss
             </button>
             <button
               onClick={() => setGanttMode('game')}
-              className={`px-4 py-2 rounded-md font-medium transition ${
+              className={`px-3 md:px-4 py-1.5 md:py-2 rounded-md text-xs md:text-sm font-medium transition ${
                 ganttMode === 'game' 
                   ? 'bg-blue-600 text-white' 
                   : 'text-gray-400 hover:text-white'
@@ -2554,7 +2569,7 @@ function TeamDetailView({ teamAbbr, tosses, games, teams, getTeamData, getGameFo
           }
         </p>
         
-        <div className="overflow-x-auto py-32" style={{ overflowY: 'visible' }}>
+        <div className="overflow-x-auto py-8" style={{ overflowY: 'visible' }}>
           <div className="min-w-[1200px]" style={{ position: 'relative' }}>
             {Object.keys(ganttData).sort((a, b) => b - a).map((season, seasonIdx) => {
               const data = ganttData[season];
@@ -2849,7 +2864,7 @@ function TeamDetailView({ teamAbbr, tosses, games, teams, getTeamData, getGameFo
                     <div className="flex items-center gap-4">
                       <div className={`w-2 h-12 rounded ${isWinner ? 'bg-green-500' : 'bg-red-500'}`}></div>
                       <div className="text-sm text-gray-400 w-32 text-left">
-                        {toss.game_date && new Date(toss.game_date).toLocaleDateString()}
+                        {toss.game_date && formatGameDate(toss.game_date)}
                         <div className="text-xs">{toss.season} Wk {toss.week}</div>
                         <div className="text-xs">{toss.game_type}{toss.toss_type === 'Overtime' ? ' (OT)' : ''}</div>
                       </div>
@@ -2876,6 +2891,11 @@ function TeamDetailView({ teamAbbr, tosses, games, teams, getTeamData, getGameFo
                     <div className="text-right">
                       <div className={`font-bold text-sm mb-1 ${isWinner ? 'text-green-400' : 'text-red-400'}`}>
                         Toss: {isWinner ? 'WON' : 'LOST'}
+                        {isWinner && toss.winner_choice && (
+                          <span className="text-xs ml-2 text-gray-400">
+                            ({toss.winner_choice})
+                          </span>
+                        )}
                       </div>
                       {game && (
                         <div className={`font-bold text-sm ${
@@ -2943,7 +2963,7 @@ function TeamDetailView({ teamAbbr, tosses, games, teams, getTeamData, getGameFo
                         'bg-gray-500'
                       }`}></div>
                       <div className="text-sm text-gray-400 w-32 text-left">
-                        {regularToss.game_date && new Date(regularToss.game_date).toLocaleDateString()}
+                        {regularToss.game_date && formatGameDate(regularToss.game_date)}
                         <div className="text-xs">{regularToss.season} Wk {regularToss.week}</div>
                         <div className="text-xs">{regularToss.game_type}</div>
                       </div>
@@ -3061,12 +3081,7 @@ function GameDetailModal({ clickedCell, teamAbbr, getTeamData, onClose }) {
               if (dateStr) {
                 return (
                   <div className="text-sm text-gray-400 mb-2">
-                    {new Date(dateStr).toLocaleDateString('en-US', { 
-                      weekday: 'long', 
-                      month: 'long', 
-                      day: 'numeric',
-                      year: 'numeric'
-                    })}
+                    {formatGameDate(dateStr)}
                   </div>
                 );
               }
@@ -3177,11 +3192,22 @@ function GameDetailModal({ clickedCell, teamAbbr, getTeamData, onClose }) {
                   <div className="w-2 h-2 rounded-full bg-blue-400"></div>
                   <span className="text-white font-medium">Regular Toss</span>
                 </div>
-                <span className={`font-bold text-lg ${
-                  clickedCell.regularTossWon ? 'text-green-400' : 'text-red-400'
-                }`}>
-                  {clickedCell.regularTossWon ? 'WON' : 'LOST'}
-                </span>
+                <div className="text-right">
+                  <span className={`font-bold text-lg ${
+                    clickedCell.regularTossWon ? 'text-green-400' : 'text-red-400'
+                  }`}>
+                    {clickedCell.regularTossWon ? 'WON' : 'LOST'}
+                  </span>
+                  {clickedCell.regularTossWon && (() => {
+                    // Find the regular toss and get the winner's choice
+                    const regularToss = clickedCell.tosses?.find(t => t.toss_type === 'Regular') || clickedCell;
+                    return regularToss.winner_choice && (
+                      <div className="text-xs text-gray-400 mt-1">
+                        Chose: {regularToss.winner_choice}
+                      </div>
+                    );
+                  })()}
+                </div>
               </div>
             )}
             {clickedCell.hasOT && clickedCell.otTossWon !== null && (
@@ -3190,11 +3216,22 @@ function GameDetailModal({ clickedCell, teamAbbr, getTeamData, onClose }) {
                   <div className="w-2 h-2 rounded-full bg-orange-400"></div>
                   <span className="text-white font-medium">Overtime Toss</span>
                 </div>
-                <span className={`font-bold text-lg ${
-                  clickedCell.otTossWon ? 'text-green-400' : 'text-red-400'
-                }`}>
-                  {clickedCell.otTossWon ? 'WON' : 'LOST'}
-                </span>
+                <div className="text-right">
+                  <span className={`font-bold text-lg ${
+                    clickedCell.otTossWon ? 'text-green-400' : 'text-red-400'
+                  }`}>
+                    {clickedCell.otTossWon ? 'WON' : 'LOST'}
+                  </span>
+                  {clickedCell.otTossWon && (() => {
+                    // Find the OT toss and get the winner's choice
+                    const otToss = clickedCell.tosses?.find(t => t.toss_type === 'Overtime') || clickedCell;
+                    return otToss.winner_choice && (
+                      <div className="text-xs text-gray-400 mt-1">
+                        Chose: {otToss.winner_choice}
+                      </div>
+                    );
+                  })()}
+                </div>
               </div>
             )}
           </div>
@@ -3381,12 +3418,12 @@ function RecordsView({ tosses, games, teams, teamStats, getTeamData, getGameForT
           if (currentIsWin !== true) {
             // Starting a NEW win streak (was losing or first toss)
             currentStreak = 1;
-            currentStreakStart = toss.game_date ? new Date(toss.game_date).toLocaleDateString() : `${toss.season} Wk ${toss.week}`;
-            currentStreakEnd = toss.game_date ? new Date(toss.game_date).toLocaleDateString() : `${toss.season} Wk ${toss.week}`;
+            currentStreakStart = toss.game_date ? formatGameDate(toss.game_date) : `${toss.season} Wk ${toss.week}`;
+            currentStreakEnd = toss.game_date ? formatGameDate(toss.game_date) : `${toss.season} Wk ${toss.week}`;
           } else {
             // Continuing win streak
             currentStreak++;
-            currentStreakEnd = toss.game_date ? new Date(toss.game_date).toLocaleDateString() : `${toss.season} Wk ${toss.week}`;
+            currentStreakEnd = toss.game_date ? formatGameDate(toss.game_date) : `${toss.season} Wk ${toss.week}`;
           }
           
           if (currentStreak > longestWin) {
@@ -3400,12 +3437,12 @@ function RecordsView({ tosses, games, teams, teamStats, getTeamData, getGameForT
           if (currentIsWin !== false) {
             // Starting a NEW loss streak (was winning or first toss)
             currentStreak = 1;
-            currentStreakStart = toss.game_date ? new Date(toss.game_date).toLocaleDateString() : `${toss.season} Wk ${toss.week}`;
-            currentStreakEnd = toss.game_date ? new Date(toss.game_date).toLocaleDateString() : `${toss.season} Wk ${toss.week}`;
+            currentStreakStart = toss.game_date ? formatGameDate(toss.game_date) : `${toss.season} Wk ${toss.week}`;
+            currentStreakEnd = toss.game_date ? formatGameDate(toss.game_date) : `${toss.season} Wk ${toss.week}`;
           } else {
             // Continuing loss streak
             currentStreak++;
-            currentStreakEnd = toss.game_date ? new Date(toss.game_date).toLocaleDateString() : `${toss.season} Wk ${toss.week}`;
+            currentStreakEnd = toss.game_date ? formatGameDate(toss.game_date) : `${toss.season} Wk ${toss.week}`;
           }
           
           if (currentStreak > longestLoss) {
@@ -3573,7 +3610,7 @@ function RecordsView({ tosses, games, teams, teamStats, getTeamData, getGameForT
                                   <div className={`w-1 h-8 rounded ${teamWonToss ? 'bg-green-500' : 'bg-red-500'}`}></div>
                                   <div className="flex-1 text-left">
                                     <div className="text-gray-400 text-[10px]">
-                                      {toss.game_date && new Date(toss.game_date).toLocaleDateString()}
+                                      {toss.game_date && formatGameDate(toss.game_date)}
                                     </div>
                                     <div className="text-white">{toss.season} Wk {toss.week}</div>
                                   </div>
@@ -3656,7 +3693,7 @@ function RecordsView({ tosses, games, teams, teamStats, getTeamData, getGameForT
                             <div className="flex items-center gap-4">
                               <div className={`w-2 h-10 rounded ${teamWonToss ? 'bg-green-500' : 'bg-red-500'}`}></div>
                               <div className="text-gray-400 w-28">
-                                {toss.game_date && new Date(toss.game_date).toLocaleDateString()}
+                                {toss.game_date && formatGameDate(toss.game_date)}
                                 <div className="text-xs">{toss.season} Wk {toss.week}</div>
                                 <div className="text-xs">
                                   {toss.game_type}
@@ -4179,10 +4216,10 @@ function calculateAllRecords(tosses, games, getGameForToss, teams) {
         streak: maxStreak,
         games: maxStreakGames,
         gamesByTeam: { [team]: maxStreakGames }, // Store games per team
-        startDate: maxStreakGames[0]?.game_date ? new Date(maxStreakGames[0].game_date).toLocaleDateString() : 
+        startDate: maxStreakGames[0]?.game_date ? formatGameDate(maxStreakGames[0].game_date) : 
                    `${maxStreakGames[0]?.season} Wk ${maxStreakGames[0]?.week}`,
         endDate: maxStreakGames[maxStreakGames.length - 1]?.game_date ? 
-                 new Date(maxStreakGames[maxStreakGames.length - 1].game_date).toLocaleDateString() :
+                 formatGameDate(maxStreakGames[maxStreakGames.length - 1].game_date) :
                  `${maxStreakGames[maxStreakGames.length - 1]?.season} Wk ${maxStreakGames[maxStreakGames.length - 1]?.week}`
       };
     } else if (maxStreak === longestWin.streak && maxStreak > 0 && maxStreakGames.length > 0) {
@@ -4224,10 +4261,10 @@ function calculateAllRecords(tosses, games, getGameForToss, teams) {
         streak: maxStreak,
         games: maxStreakGames,
         gamesByTeam: { [team]: maxStreakGames },
-        startDate: maxStreakGames[0]?.game_date ? new Date(maxStreakGames[0].game_date).toLocaleDateString() :
+        startDate: maxStreakGames[0]?.game_date ? formatGameDate(maxStreakGames[0].game_date) :
                    `${maxStreakGames[0]?.season} Wk ${maxStreakGames[0]?.week}`,
         endDate: maxStreakGames[maxStreakGames.length - 1]?.game_date ? 
-                 new Date(maxStreakGames[maxStreakGames.length - 1].game_date).toLocaleDateString() :
+                 formatGameDate(maxStreakGames[maxStreakGames.length - 1].game_date) :
                  `${maxStreakGames[maxStreakGames.length - 1]?.season} Wk ${maxStreakGames[maxStreakGames.length - 1]?.week}`
       };
     } else if (maxStreak === longestLose.streak && maxStreak > 0 && maxStreakGames.length > 0) {
@@ -4241,8 +4278,8 @@ function calculateAllRecords(tosses, games, getGameForToss, teams) {
 
   // Find active streaks (most recent tosses, including OT)
   // Exclude defunct teams from active streak consideration
-  let activeWin = { team: '', streak: 0, games: [] };
-  let activeLose = { team: '', streak: 0, games: [] };
+  let activeWin = { team: '', teams: [], streak: 0, games: [], gamesByTeam: {} };
+  let activeLose = { team: '', teams: [], streak: 0, games: [], gamesByTeam: {} };
   
   Object.keys(teamTosses).forEach(team => {
     // Skip defunct teams
@@ -4268,10 +4305,35 @@ function calculateAllRecords(tosses, games, getGameForToss, teams) {
     }
     
     if (winStreak > activeWin.streak) {
-      activeWin = { team, streak: winStreak, games: winGames.reverse() };
+      activeWin = { 
+        team, 
+        teams: [team],
+        streak: winStreak, 
+        games: winGames.reverse(),
+        gamesByTeam: { [team]: winGames.reverse() }
+      };
+    } else if (winStreak === activeWin.streak && winStreak > 0) {
+      // Tied for active win streak - add this team
+      if (!activeWin.teams) activeWin.teams = [activeWin.team];
+      activeWin.teams.push(team);
+      if (!activeWin.gamesByTeam) activeWin.gamesByTeam = { [activeWin.team]: activeWin.games };
+      activeWin.gamesByTeam[team] = winGames.reverse();
     }
+    
     if (loseStreak > activeLose.streak) {
-      activeLose = { team, streak: loseStreak, games: loseGames.reverse() };
+      activeLose = { 
+        team, 
+        teams: [team],
+        streak: loseStreak, 
+        games: loseGames.reverse(),
+        gamesByTeam: { [team]: loseGames.reverse() }
+      };
+    } else if (loseStreak === activeLose.streak && loseStreak > 0) {
+      // Tied for active lose streak - add this team
+      if (!activeLose.teams) activeLose.teams = [activeLose.team];
+      activeLose.teams.push(team);
+      if (!activeLose.gamesByTeam) activeLose.gamesByTeam = { [activeLose.team]: activeLose.games };
+      activeLose.gamesByTeam[team] = loseGames.reverse();
     }
   });
 
@@ -4397,8 +4459,8 @@ function calculateAllRecords(tosses, games, getGameForToss, teams) {
         team,
         streak: maxStreak,
         games: maxGames,
-        startDate: maxGames[0]?.game_date ? new Date(maxGames[0].game_date).toLocaleDateString() : '',
-        endDate: maxGames[maxGames.length - 1]?.game_date ? new Date(maxGames[maxGames.length - 1].game_date).toLocaleDateString() : ''
+        startDate: maxGames[0]?.game_date ? formatGameDate(maxGames[0].game_date) : '',
+        endDate: maxGames[maxGames.length - 1]?.game_date ? formatGameDate(maxGames[maxGames.length - 1].game_date) : ''
       };
     }
   });
