@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, memo, useRef } from 'react';
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ScatterChart, Scatter, ReferenceLine, Cell } from 'recharts';
 
 // ============================================================================
@@ -8,6 +8,49 @@ import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, L
 // ============================================================================
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+
+// ============================================================================
+// PERFORMANCE: LAZY CHART WRAPPER
+// ============================================================================
+// Lazy loads charts only when they scroll into viewport
+const LazyChart = memo(({ children, fallbackHeight = '400px' }) => {
+  const [isVisible, setIsVisible] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+          observer.disconnect(); // Only load once
+        }
+      },
+      { rootMargin: '100px' } // Start loading 100px before visible
+    );
+
+    if (ref.current) {
+      observer.observe(ref.current);
+    }
+
+    return () => observer.disconnect();
+  }, []);
+
+  if (!isVisible) {
+    return (
+      <div 
+        ref={ref} 
+        style={{ height: fallbackHeight }}
+        className="flex items-center justify-center bg-[#1a1f3a] rounded-xl border border-gray-800"
+      >
+        <div className="text-gray-500 text-sm">Loading chart...</div>
+      </div>
+    );
+  }
+
+  return <div ref={ref}>{children}</div>;
+});
+
+LazyChart.displayName = 'LazyChart';
 
 // Helper function to format dates without timezone shift
 // Dates from DB are stored as YYYY-MM-DD and should display as-is
@@ -268,12 +311,12 @@ export default function CoinTossAnalytics() {
           }
           @keyframes coinSpin {
             0%   { transform: rotateY(0deg); }
-            40%  { transform: rotateY(720deg); }
-            55%  { transform: rotateY(810deg); }
-            65%  { transform: rotateY(780deg); }
-            75%  { transform: rotateY(810deg); }
-            85%  { transform: rotateY(795deg); }
-            100% { transform: rotateY(810deg); }
+            30%  { transform: rotateY(1440deg); }  /* 4 full spins - slower */
+            35%  { transform: rotateY(1500deg); }  /* overshoot */
+            40%  { transform: rotateY(1440deg); }  /* settle back */
+            45%  { transform: rotateY(1450deg); }  /* tiny wobble */
+            50%  { transform: rotateY(1440deg); }  /* final settle */
+            100% { transform: rotateY(1440deg); }  /* stay put */
           }
           @keyframes coinGlow {
             0%, 100% { filter: drop-shadow(0 0 6px rgba(250,204,21,0.5)); }
@@ -297,10 +340,9 @@ export default function CoinTossAnalytics() {
             animation: headlinePulse 3s ease-in-out infinite;
           }
           .coin-spin {
-            animation: coinSpin 3.5s cubic-bezier(0.23,1,0.32,1) infinite;
+            animation: coinSpin 8s ease-in-out infinite, coinGlow 2s ease-in-out infinite;
             animation-delay: 0.5s;
             transform-style: preserve-3d;
-            animation: coinSpin 4s ease-in-out infinite, coinGlow 2s ease-in-out infinite;
           }
           .yard-scroll {
             animation: yardScroll 18s linear infinite;
@@ -332,20 +374,13 @@ export default function CoinTossAnalytics() {
             <div className="flex items-center gap-3 md:gap-4">
 
               {/* Animated coin — smaller on mobile */}
-              <div style={{ perspective: '400px' }} className="flex-shrink-0">
+              <div style={{ perspective: '1000px' }} className="w-9 h-9 md:w-12 md:h-12 flex-shrink-0">
                 <svg
-                  className="coin-spin w-9 h-9 md:w-12 md:h-12"
+                  className="coin-spin w-full h-full"
                   viewBox="0 0 48 48"
                   fill="none"
                   xmlns="http://www.w3.org/2000/svg"
                 >
-                  <circle cx="24" cy="24" r="23" fill="url(#coinGrad)" stroke="#b45309" strokeWidth="1.5"/>
-                  <circle cx="24" cy="24" r="19" fill="none" stroke="#fcd34d" strokeWidth="0.75" strokeDasharray="3 2" opacity="0.6"/>
-                  <ellipse cx="24" cy="24" rx="10" ry="14" fill="#92400e" stroke="#b45309" strokeWidth="1"/>
-                  <line x1="24" y1="13" x2="24" y2="35" stroke="#fcd34d" strokeWidth="1.2"/>
-                  <line x1="20" y1="19" x2="28" y2="19" stroke="#fcd34d" strokeWidth="1"/>
-                  <line x1="19" y1="23" x2="29" y2="23" stroke="#fcd34d" strokeWidth="1"/>
-                  <line x1="20" y1="27" x2="28" y2="27" stroke="#fcd34d" strokeWidth="1"/>
                   <defs>
                     <radialGradient id="coinGrad" cx="35%" cy="30%" r="65%">
                       <stop offset="0%" stopColor="#fde68a"/>
@@ -353,12 +388,19 @@ export default function CoinTossAnalytics() {
                       <stop offset="100%" stopColor="#b45309"/>
                     </radialGradient>
                   </defs>
+                  <circle cx="24" cy="24" r="23" fill="url(#coinGrad)" stroke="#b45309" strokeWidth="1.5"/>
+                  <circle cx="24" cy="24" r="19" fill="none" stroke="#fcd34d" strokeWidth="0.75" strokeDasharray="3 2" opacity="0.6"/>
+                  <ellipse cx="24" cy="24" rx="10" ry="14" fill="#92400e" stroke="#b45309" strokeWidth="1"/>
+                  <line x1="24" y1="13" x2="24" y2="35" stroke="#fcd34d" strokeWidth="1.2"/>
+                  <line x1="20" y1="19" x2="28" y2="19" stroke="#fcd34d" strokeWidth="1"/>
+                  <line x1="19" y1="23" x2="29" y2="23" stroke="#fcd34d" strokeWidth="1"/>
+                  <line x1="20" y1="27" x2="28" y2="27" stroke="#fcd34d" strokeWidth="1"/>
                 </svg>
               </div>
 
               {/* Title + tagline */}
               <div>
-                <h1 className="headline-text leading-none tracking-wide" style={{ fontSize: 'clamp(1.5rem, 5vw, 2.4rem)' }}>
+                <h1 className="leading-none font-bold" style={{ fontSize: 'clamp(1.5rem, 5vw, 2.4rem)', fontFamily: "'Barlow Condensed', sans-serif", letterSpacing: '0.02em' }}>
                   <span style={{
                     background: 'linear-gradient(135deg, #93c5fd 0%, #60a5fa 40%, #3b82f6 70%, #1d4ed8 100%)',
                     WebkitBackgroundClip: 'text',
@@ -435,7 +477,11 @@ export default function CoinTossAnalytics() {
                   <option value="last1">Last Season</option>
                   <option value="last5">Last 5 Seasons</option>
                   <option value="last10">Last 10 Seasons</option>
-                  <option value="all">All Time</option>
+                  <option value="all">
+                    {availableSeasons.length > 0 
+                      ? `All Seasons (Since ${availableSeasons[availableSeasons.length - 1]})`
+                      : 'All Seasons'}
+                  </option>
                   <option value="custom">Custom Range</option>
                 </select>
                 
@@ -509,7 +555,9 @@ export default function CoinTossAnalytics() {
               )}
               {seasonFilter === 'all' && (
                 <span className="px-2 py-1 bg-purple-900 text-purple-300 rounded text-xs">
-                  All Time
+                  {availableSeasons.length > 0 
+                    ? `All Seasons (Since ${availableSeasons[availableSeasons.length - 1]})`
+                    : 'All Seasons'}
                 </span>
               )}
               {seasonFilter === 'custom' && (
@@ -631,7 +679,7 @@ export default function CoinTossAnalytics() {
 // ============================================================================
 // ANALYTICS VIEW - Main data exploration
 // ============================================================================
-function AnalyticsView({ teamStats, filteredTosses, games, teams, selectedTeams, setSelectedTeams, getTeamData, getGameForToss, sortBy, sortDirection, onSort, onTeamClick }) {
+const AnalyticsView = memo(function AnalyticsView({ teamStats, filteredTosses, games, teams, selectedTeams, setSelectedTeams, getTeamData, getGameForToss, sortBy, sortDirection, onSort, onTeamClick }) {
   const [expandedTeam, setExpandedTeam] = useState(null);
   const [expandedOpponent, setExpandedOpponent] = useState(null); // Format: "TEAM-OPPONENT" e.g. "MIN-GB"
   const [clickedGame, setClickedGame] = useState(null); // For game detail modal
@@ -772,12 +820,12 @@ function AnalyticsView({ teamStats, filteredTosses, games, teams, selectedTeams,
                 </th>
                 <th className="px-2 md:px-4 py-3 text-center hidden sm:table-cell">
                   <button onClick={() => onSort('totalTosses')} className="flex items-center justify-center gap-1 md:gap-2 text-xs font-bold text-gray-400 uppercase hover:text-white transition w-full">
-                    Tosses <SortIcon column="totalTosses" />
+                    Games <SortIcon column="totalTosses" />
                   </button>
                 </th>
                 <th className="px-2 md:px-4 py-3 text-center hidden sm:table-cell">
                   <button onClick={() => onSort('tossWins')} className="flex items-center justify-center gap-1 md:gap-2 text-xs font-bold text-gray-400 uppercase hover:text-white transition w-full">
-                    Wins <SortIcon column="tossWins" />
+                    Toss Wins <SortIcon column="tossWins" />
                   </button>
                 </th>
                 <th className="px-2 md:px-4 py-3 text-center">
@@ -983,7 +1031,7 @@ function AnalyticsView({ teamStats, filteredTosses, games, teams, selectedTeams,
                                         }}
                                       >
                                         <div className="flex items-center justify-center gap-1">
-                                          Matchups
+                                          Games
                                           {currentSortBy === 'matchups' && (
                                             <span className="text-blue-400">{currentSortDirection === 'asc' ? '▲' : '▼'}</span>
                                           )}
@@ -1381,7 +1429,9 @@ function AnalyticsView({ teamStats, filteredTosses, games, teams, selectedTeams,
       </div>
     </div>
   );
-}
+});
+
+AnalyticsView.displayName = 'AnalyticsView';
 
 // Calculate opponent stats for a single team (used in accordion expansion)
 function calculateOpponentStatsForTeam(tosses, teamAbbr, getGameForToss) {
@@ -1428,13 +1478,22 @@ function calculateOpponentStatsForTeam(tosses, teamAbbr, getGameForToss) {
         tossWins: 0,
         gameWins: 0,
         gamesWithData: 0,
-        tossHistory: []
+        tossHistory: [],
+        gameIds: new Set() // Track unique games to avoid double-counting OT
       };
     }
     
-    opponentMap[opponent].totalMatchups++;
+    // Only count Regular tosses for matchup stats (one per game)
+    if (toss.toss_type === 'Regular') {
+      opponentMap[opponent].totalMatchups++;
+      
+      // Count toss wins (only Regular, for accurate percentage)
+      if (!teamWonToss) {
+        opponentMap[opponent].tossWins++;
+      }
+    }
     
-    // Store EACH toss result for streak calculation
+    // Store EACH toss result for streak calculation (includes OT)
     opponentMap[opponent].tossHistory.push({
       season: toss.season,
       week: toss.week,
@@ -1443,16 +1502,19 @@ function calculateOpponentStatsForTeam(tosses, teamAbbr, getGameForToss) {
       opponentWon: !teamWonToss
     });
     
-    if (!teamWonToss) {
-      opponentMap[opponent].tossWins++;
-    }
-    
+    // Only count each unique GAME once for game wins/losses
     const game = getGameForToss(toss);
     if (game && game.home_score != null && game.away_score != null) {
-      opponentMap[opponent].gamesWithData++;
-      const gameWinner = game.home_score > game.away_score ? game.home_team : game.away_team;
-      if (opponent === gameWinner) {
-        opponentMap[opponent].gameWins++;
+      const gameKey = `${game.season}-${game.week}-${game.home_team}-${game.away_team}`;
+      
+      if (!opponentMap[opponent].gameIds.has(gameKey)) {
+        opponentMap[opponent].gameIds.add(gameKey);
+        opponentMap[opponent].gamesWithData++;
+        
+        const gameWinner = game.home_score > game.away_score ? game.home_team : game.away_team;
+        if (opponent === gameWinner) {
+          opponentMap[opponent].gameWins++;
+        }
       }
     }
   });
@@ -1473,8 +1535,9 @@ function calculateOpponentStatsForTeam(tosses, teamAbbr, getGameForToss) {
         }
       }
       
+      const { gameIds, ...oppData } = opp; // Remove Set before returning
       return {
-        ...opp,
+        ...oppData,
         tossWinPct: opp.totalMatchups > 0 ? Math.round((opp.tossWins / opp.totalMatchups) * 100) : 0,
         gameWinPct: opp.gamesWithData > 0 ? Math.round((opp.gameWins / opp.gamesWithData) * 100) : 0,
         currentStreak: currentStreak
@@ -1520,35 +1583,44 @@ function calculateOpponentStats(filteredTosses, filteredTeams, getGameForToss) {
         tossWins: 0,
         gameWins: 0,
         gamesWithData: 0,
-        gameHistory: [] // Track game outcomes for streak calculation
+        gameHistory: [], // Track game outcomes for streak calculation
+        gameIds: new Set() // Track unique games
       };
     }
     
-    // Increment matchup count (only once per toss)
-    opponentMap[opponent].totalMatchups++;
-    
-    // Track if opponent won the toss
-    if (opponentWonToss) {
-      opponentMap[opponent].tossWins++;
+    // Only count Regular tosses for matchup stats (one per game)
+    if (toss.toss_type === 'Regular') {
+      opponentMap[opponent].totalMatchups++;
+      
+      // Track if opponent won the Regular toss (for accurate percentage)
+      if (opponentWonToss) {
+        opponentMap[opponent].tossWins++;
+      }
     }
     
-    // Check game outcome
+    // Check game outcome - only count each unique game once
     const game = getGameForToss(toss);
     if (game && game.home_score != null && game.away_score != null) {
-      opponentMap[opponent].gamesWithData++;
-      const gameWinner = game.home_score > game.away_score ? game.home_team : game.away_team;
-      const oppWon = opponent === gameWinner;
+      const gameKey = `${game.season}-${game.week}-${game.home_team}-${game.away_team}`;
       
-      if (oppWon) {
-        opponentMap[opponent].gameWins++;
+      if (!opponentMap[opponent].gameIds.has(gameKey)) {
+        opponentMap[opponent].gameIds.add(gameKey);
+        opponentMap[opponent].gamesWithData++;
+        
+        const gameWinner = game.home_score > game.away_score ? game.home_team : game.away_team;
+        const oppWon = opponent === gameWinner;
+        
+        if (oppWon) {
+          opponentMap[opponent].gameWins++;
+        }
+        
+        // Add to history for streak calculation
+        opponentMap[opponent].gameHistory.push({
+          season: toss.season,
+          week: toss.week,
+          won: oppWon
+        });
       }
-      
-      // Add to history for streak calculation
-      opponentMap[opponent].gameHistory.push({
-        season: toss.season,
-        week: toss.week,
-        won: oppWon
-      });
     }
   });
   
@@ -1572,8 +1644,9 @@ function calculateOpponentStats(filteredTosses, filteredTeams, getGameForToss) {
         }
       }
       
+      const { gameIds, ...oppData } = opp; // Remove Set before returning
       return {
-        ...opp,
+        ...oppData,
         tossWinPct: opp.totalMatchups > 0 ? Math.round((opp.tossWins / opp.totalMatchups) * 100) : 0,
         gameWinPct: opp.gamesWithData > 0 ? Math.round((opp.gameWins / opp.gamesWithData) * 100) : 0,
         currentStreak: streak
@@ -1589,7 +1662,7 @@ function calculateOpponentStats(filteredTosses, filteredTeams, getGameForToss) {
 // ============================================================================
 // MATCHUP EXPLORER
 // ============================================================================
-function MatchupExplorer({ tosses, games, teams, getTeamData, getGameForToss, compareTeams, setCompareTeams, onTeamClick }) {
+const MatchupExplorer = memo(function MatchupExplorer({ tosses, games, teams, getTeamData, getGameForToss, compareTeams, setCompareTeams, onTeamClick }) {
   // Local filter state for matchup explorer
   const [seasonFilter, setSeasonFilter] = useState('last5');
   const [customSeasonStart, setCustomSeasonStart] = useState(0);
@@ -1698,7 +1771,7 @@ function MatchupExplorer({ tosses, games, teams, getTeamData, getGameForToss, co
               <option value="last1">Last Season</option>
               <option value="last5">Last 5 Seasons</option>
               <option value="last10">Last 10 Seasons</option>
-              <option value="all">All Time</option>
+              <option value="all">{availableSeasons.length > 0 ? `All Seasons (Since ${availableSeasons[availableSeasons.length - 1]})` : 'All Seasons'}</option>
               <option value="custom">Custom Range</option>
             </select>
             
@@ -1773,9 +1846,11 @@ function MatchupExplorer({ tosses, games, teams, getTeamData, getGameForToss, co
       )}
     </div>
   );
-}
+});
 
-function MatchupDetails({ team1, team2, tosses, games, getTeamData, getGameForToss, onTeamClick }) {
+MatchupExplorer.displayName = 'MatchupExplorer';
+
+const MatchupDetails = memo(function MatchupDetails({ team1, team2, tosses, games, getTeamData, getGameForToss, onTeamClick }) {
   const [clickedGame, setClickedGame] = useState(null); // For game detail modal
   const [logMode, setLogMode] = useState('toss'); // 'toss' or 'game'
   
@@ -2008,12 +2083,14 @@ function MatchupDetails({ team1, team2, tosses, games, getTeamData, getGameForTo
       )}
     </div>
   );
-}
+});
+
+MatchupDetails.displayName = 'MatchupDetails';
 
 // ============================================================================
 // TEAM DETAIL VIEW
 // ============================================================================
-function TeamDetailView({ teamAbbr, tosses, games, teams, getTeamData, getGameForToss, onBack, onTeamClick }) {
+const TeamDetailView = memo(function TeamDetailView({ teamAbbr, tosses, games, teams, getTeamData, getGameForToss, onBack, onTeamClick }) {
   const [seasonFilter, setSeasonFilter] = useState('last5'); // last5, last10, all, custom
   const [customSeasonStart, setCustomSeasonStart] = useState(0);
   const [customSeasonEnd, setCustomSeasonEnd] = useState(0);
@@ -2468,7 +2545,7 @@ function TeamDetailView({ teamAbbr, tosses, games, teams, getTeamData, getGameFo
               <option value="last1">Last Season</option>
               <option value="last5">Last 5 Seasons</option>
               <option value="last10">Last 10 Seasons</option>
-              <option value="all">All Time</option>
+              <option value="all">{availableSeasons.length > 0 ? `All Seasons (Since ${availableSeasons[availableSeasons.length - 1]})` : 'All Seasons'}</option>
               <option value="custom">Custom Range</option>
             </select>
             
@@ -2859,46 +2936,46 @@ function TeamDetailView({ teamAbbr, tosses, games, teams, getTeamData, getGameFo
                       };
                       setClickedCell(modalData);
                     }}
-                    className="w-full flex items-center justify-between p-4 bg-[#0f172a] rounded-lg hover:bg-[#1a1f3a] transition cursor-pointer"
+                    className="w-full flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 p-3 md:p-4 bg-[#0f172a] rounded-lg hover:bg-[#1a1f3a] transition cursor-pointer"
                   >
-                    <div className="flex items-center gap-4">
-                      <div className={`w-2 h-12 rounded ${isWinner ? 'bg-green-500' : 'bg-red-500'}`}></div>
-                      <div className="text-sm text-gray-400 w-32 text-left">
+                    <div className="flex items-center gap-2 sm:gap-4 min-w-0">
+                      <div className={`w-2 h-12 rounded flex-shrink-0 ${isWinner ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                      <div className="text-xs sm:text-sm text-gray-400 w-24 sm:w-32 text-left flex-shrink-0">
                         {toss.game_date && formatGameDate(toss.game_date)}
                         <div className="text-xs">{toss.season} Wk {toss.week}</div>
                         <div className="text-xs">{toss.game_type}{toss.toss_type === 'Overtime' ? ' (OT)' : ''}</div>
                       </div>
-                      <div className="flex items-center gap-3">
-                        <span className="text-white font-semibold">vs</span>
+                      <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                        <span className="text-white text-sm font-semibold">vs</span>
                         {opponentData && (
                           <button
                             onClick={(e) => {
                               e.stopPropagation(); // Prevent modal from opening
                               onTeamClick(opponent);
                             }}
-                            className="hover:opacity-75 transition"
+                            className="hover:opacity-75 transition flex-shrink-0"
                           >
                             <img 
                               src={opponentData.logo_url} 
                               alt={opponent}
-                              className="w-8 h-8 object-contain"
+                              className="w-6 h-6 sm:w-8 sm:h-8 object-contain"
                             />
                           </button>
                         )}
-                        <span className="text-white font-bold">{opponent}</span>
+                        <span className="text-white text-sm font-bold truncate">{opponent}</span>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <div className={`font-bold text-sm mb-1 ${isWinner ? 'text-green-400' : 'text-red-400'}`}>
+                    <div className="text-left sm:text-right flex-shrink-0">
+                      <div className={`font-bold text-xs sm:text-sm mb-1 ${isWinner ? 'text-green-400' : 'text-red-400'}`}>
                         Toss: {isWinner ? 'WON' : 'LOST'}
                         {isWinner && toss.winner_choice && (
-                          <span className="text-xs ml-2 text-gray-400">
+                          <span className="text-xs ml-1 sm:ml-2 text-gray-400">
                             ({toss.winner_choice})
                           </span>
                         )}
                       </div>
                       {game && (
-                        <div className={`font-bold text-sm ${
+                        <div className={`font-bold text-xs sm:text-sm ${
                           gameResult === 'tie' ? 'text-yellow-400' :
                           gameResult === 'won' ? 'text-green-400' : 
                           'text-red-400'
@@ -3050,13 +3127,16 @@ function TeamDetailView({ teamAbbr, tosses, games, teams, getTeamData, getGameFo
       </div>
     </div>
   );
-}
+});
+
+TeamDetailView.displayName = 'TeamDetailView';
 
 // ============================================================================
 // RECORDS & STREAKS VIEW
 // ============================================================================
 // Reusable Game Detail Modal Component
-function GameDetailModal({ clickedCell, teamAbbr, getTeamData, onClose }) {
+// ============================================================================
+const GameDetailModal = memo(function GameDetailModal({ clickedCell, teamAbbr, getTeamData, onClose }) {
   if (!clickedCell) return null;
   
   return (
@@ -3247,9 +3327,11 @@ function GameDetailModal({ clickedCell, teamAbbr, getTeamData, onClose }) {
       </div>
     </div>
   );
-}
+});
 
-function RecordsView({ tosses, games, teams, teamStats, getTeamData, getGameForToss, onTeamClick }) {
+GameDetailModal.displayName = 'GameDetailModal';
+
+const RecordsView = memo(function RecordsView({ tosses, games, teams, teamStats, getTeamData, getGameForToss, onTeamClick }) {
   const [expandedRecord, setExpandedRecord] = useState(null);
   
   // Filter state
@@ -3488,7 +3570,8 @@ function RecordsView({ tosses, games, teams, teamStats, getTeamData, getGameForT
     };
   }, [filteredTosses, games, getGameForToss, getTeamData]);
   
-  const RecordCard = ({ title, value, team, teams, subtext, games, gamesByTeam, recordKey, breakdown, getGameForToss, getTeamData }) => {
+  // Memoize RecordCard to prevent recreating on every render
+  const RecordCard = useMemo(() => memo(({ title, value, team, teams, subtext, games, gamesByTeam, recordKey, breakdown, getGameForToss, getTeamData }) => {
     const teamList = teams || [team]; // Use teams array if provided, otherwise single team
     const teamData = teamList.map(t => getTeamData(t));
     const isExpanded = expandedRecord === recordKey;
@@ -3521,7 +3604,8 @@ function RecordsView({ tosses, games, teams, teamStats, getTeamData, getGameForT
                 {teamList.join(' / ')}
                 {teamList.length > 1 && <span className="text-sm text-gray-400 ml-2">(tied)</span>}
               </div>
-              {subtext && <div className="text-sm text-gray-400 mt-1">{subtext}</div>}
+              {/* Only show subtext if there's NOT a tie, to avoid confusion about which team's dates they are */}
+              {subtext && teamList.length === 1 && <div className="text-sm text-gray-400 mt-1">{subtext}</div>}
             </div>
           </div>
         </button>
@@ -3733,19 +3817,15 @@ function RecordsView({ tosses, games, teams, teamStats, getTeamData, getGameForT
         )}
       </div>
     );
-  };
+  }), [expandedRecord]);
+  
+  RecordCard.displayName = 'RecordCard';
 
   return (
     <div className="space-y-8">
-      {/* Header */}
-      <div className="text-center py-8">
-        <h1 className="text-5xl font-bold text-white mb-4">Records & Streaks</h1>
-        <p className="text-xl text-gray-400">The most impressive coin toss achievements in NFL history</p>
-      </div>
-
       {/* Filters */}
-      <div className="bg-[#1a1f3a] p-6 rounded-xl border border-gray-800">
-        <h3 className="text-lg font-bold text-white mb-4">Filters</h3>
+      <div className="bg-[#1a1f3a] p-4 md:p-6 rounded-xl border border-gray-800">
+        <h3 className="text-base md:text-lg font-bold text-white mb-3 md:mb-4">Filters</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Season Filter */}
           <div>
@@ -3758,7 +3838,7 @@ function RecordsView({ tosses, games, teams, teamStats, getTeamData, getGameForT
               <option value="last1">Last Season</option>
               <option value="last5">Last 5 Seasons</option>
               <option value="last10">Last 10 Seasons</option>
-              <option value="all">All Time</option>
+              <option value="all">{availableSeasons.length > 0 ? `All Seasons (Since ${availableSeasons[availableSeasons.length - 1]})` : 'All Seasons'}</option>
               <option value="custom">Custom Range</option>
             </select>
             
@@ -3986,52 +4066,77 @@ function RecordsView({ tosses, games, teams, teamStats, getTeamData, getGameForT
         {/* Row 1: Defer % and Toss→Game Correlation */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
           {/* Defer vs Receive Trend */}
-          <div className="bg-[#1a1f3a] p-6 rounded-xl border border-gray-800">
-            <h3 className="text-lg font-bold text-white mb-4">Defer % by Season</h3>
-            <p className="text-sm text-gray-400 mb-4">
-              Average: {nflStats.avgDeferRate}% of teams choose to defer when winning the toss
-            </p>
-            <ResponsiveContainer width="100%" height={250}>
-              <LineChart data={nflStats.deferTrendData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                <XAxis dataKey="season" stroke="#9ca3af" />
-                <YAxis stroke="#9ca3af" domain={[0, 100]} />
-                <Tooltip 
-                  contentStyle={{ backgroundColor: '#1a1f3a', border: '1px solid #374151' }}
-                  labelStyle={{ color: '#fff' }}
-                />
-                <Line type="monotone" dataKey="deferPct" stroke="#3b82f6" strokeWidth={2} name="Defer %" />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
+          <LazyChart fallbackHeight="350px">
+            <div className="bg-[#1a1f3a] p-6 rounded-xl border border-gray-800">
+              <h3 className="text-lg font-bold text-white mb-4">Defer % by Season</h3>
+              <p className="text-sm text-gray-400 mb-4">
+                Average: {nflStats.avgDeferRate}% of teams choose to defer when winning the toss
+              </p>
+              <ResponsiveContainer width="100%" height={250}>
+                <LineChart data={nflStats.deferTrendData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                  <XAxis dataKey="season" stroke="#9ca3af" />
+                  <YAxis stroke="#9ca3af" domain={[0, 100]} />
+                  <Tooltip 
+                    contentStyle={{ backgroundColor: '#1a1f3a', border: '1px solid #374151' }}
+                    labelStyle={{ color: '#fff' }}
+                  />
+                  <Line type="monotone" dataKey="deferPct" stroke="#3b82f6" strokeWidth={2} name="Defer %" />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </LazyChart>
           
           {/* Toss Win → Game Win Correlation */}
-          <div className="bg-[#1a1f3a] p-6 rounded-xl border border-gray-800">
-            <h3 className="text-lg font-bold text-white mb-4">Does Winning the Toss Help?</h3>
-            <p className="text-sm text-gray-400 mb-4">
-              Average: {nflStats.avgCorrelation}% of toss winners also won the game
-            </p>
-            <ResponsiveContainer width="100%" height={250}>
-              <LineChart data={nflStats.correlationData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                <XAxis dataKey="season" stroke="#9ca3af" />
-                <YAxis stroke="#9ca3af" domain={[40, 60]} />
-                <Tooltip 
-                  contentStyle={{ backgroundColor: '#1a1f3a', border: '1px solid #374151' }}
-                  labelStyle={{ color: '#fff' }}
-                />
-                <Line type="monotone" dataKey="correlation" stroke="#10b981" strokeWidth={2} name="Toss→Game Win %" />
-                <ReferenceLine y={50} stroke="#ef4444" strokeDasharray="3 3" label="50% (Random)" />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
+          <LazyChart fallbackHeight="350px">
+            <div className="bg-[#1a1f3a] p-6 rounded-xl border border-gray-800">
+              <h3 className="text-lg font-bold text-white mb-4">Does Winning the Toss Help?</h3>
+              <p className="text-sm text-gray-400 mb-4">
+                Average: {nflStats.avgCorrelation}% of toss winners also won the game
+              </p>
+              <ResponsiveContainer width="100%" height={250}>
+                <LineChart data={nflStats.correlationData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                  <XAxis dataKey="season" stroke="#9ca3af" />
+                  <YAxis stroke="#9ca3af" domain={[40, 60]} />
+                  <Tooltip 
+                    contentStyle={{ backgroundColor: '#1a1f3a', border: '1px solid #374151' }}
+                    labelStyle={{ color: '#fff' }}
+                  />
+                  <Line type="monotone" dataKey="correlation" stroke="#10b981" strokeWidth={2} name="Toss→Game Win %" />
+                  <ReferenceLine y={50} stroke="#ef4444" strokeDasharray="3 3" label="50% (Random)" />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </LazyChart>
         </div>
 
         {/* Team Performance Quadrant Visualization */}
-        <div className="bg-[#1a1f3a] p-6 rounded-xl border border-gray-800">
-          <h3 className="text-xl font-bold text-white mb-2">Team Performance Matrix</h3>
-          <p className="text-sm text-gray-400 mb-6">Toss Success vs Game Success - See which teams are blessed, cursed, lucky, or doomed</p>
+        <LazyChart fallbackHeight="660px">
+          <div className="bg-[#1a1f3a] p-6 rounded-xl border border-gray-800">
+            <h3 className="text-xl font-bold text-white mb-2">Team Performance Matrix</h3>
+            <p className="text-sm text-gray-400 mb-6">Toss Success vs Game Success - See which teams are blessed, cursed, lucky, or doomed</p>
           
+          {/* Calculate dynamic axis ranges based on data */}
+          {(() => {
+            const tossWinPcts = teamStats.map(t => t.tossWinPct);
+            const gameWinPcts = teamStats.map(t => t.gameWinPct);
+            
+            const minToss = Math.min(...tossWinPcts);
+            const maxToss = Math.max(...tossWinPcts);
+            const minGame = Math.min(...gameWinPcts);
+            const maxGame = Math.max(...gameWinPcts);
+            
+            // Add 5% padding on each side for breathing room
+            const tossPadding = (maxToss - minToss) * 0.15;
+            const gamePadding = (maxGame - minGame) * 0.15;
+            
+            const xMin = Math.max(0, Math.floor(minToss - tossPadding));
+            const xMax = Math.min(100, Math.ceil(maxToss + tossPadding));
+            const yMin = Math.max(0, Math.floor(minGame - gamePadding));
+            const yMax = Math.min(100, Math.ceil(maxGame + gamePadding));
+            
+            return (
           <div className="w-full" style={{ height: '600px' }}>
             <ResponsiveContainer width="100%" height="100%">
               <ScatterChart margin={{ top: 40, right: 40, bottom: 40, left: 40 }}>
@@ -4040,7 +4145,7 @@ function RecordsView({ tosses, games, teams, teamStats, getTeamData, getGameForT
                   type="number" 
                   dataKey="tossWinPct" 
                   name="Toss Win %" 
-                  domain={[30, 70]}
+                  domain={[xMin, xMax]}
                   label={{ value: 'Toss Win %', position: 'bottom', fill: '#9ca3af', offset: 0 }}
                   stroke="#9ca3af"
                   tick={{ fill: '#9ca3af' }}
@@ -4049,7 +4154,7 @@ function RecordsView({ tosses, games, teams, teamStats, getTeamData, getGameForT
                   type="number" 
                   dataKey="gameWinPct" 
                   name="Game Win %" 
-                  domain={[0, 100]}
+                  domain={[yMin, yMax]}
                   label={{ value: 'Game Win % (After Toss Win)', angle: -90, position: 'left', fill: '#9ca3af', offset: 10 }}
                   stroke="#9ca3af"
                   tick={{ fill: '#9ca3af' }}
@@ -4102,8 +4207,8 @@ function RecordsView({ tosses, games, teams, teamStats, getTeamData, getGameForT
                             <div className="font-bold text-white">{data.abbr}</div>
                           </div>
                           <div className="text-sm space-y-1">
-                            <div className="text-blue-400">Toss Win %: {data.tossWinPct}%</div>
-                            <div className="text-green-400">Game Win % (After Toss Win): {data.gameWinPct}%</div>
+                            <div className="text-blue-400">Toss Win %: {Number(data.tossWinPct).toFixed(2)}%</div>
+                            <div className="text-green-400">Game Win % (After Toss Win): {Number(data.gameWinPct).toFixed(2)}%</div>
                             <div className="text-gray-400">Total Tosses: {data.totalTosses}</div>
                           </div>
                         </div>
@@ -4141,11 +4246,16 @@ function RecordsView({ tosses, games, teams, teamStats, getTeamData, getGameForT
               </ScatterChart>
             </ResponsiveContainer>
           </div>
+            );
+          })()}
         </div>
+        </LazyChart>
       </div>
     </div>
   );
-}
+});
+
+RecordsView.displayName = 'RecordsView';
 
 // Calculate all records
 function calculateAllRecords(tosses, games, getGameForToss, teams) {
@@ -4585,35 +4695,45 @@ function calculateTeamStats(tosses, games, getGameForToss) {
   const teamMap = {};
 
   tosses.forEach(toss => {
+    // IMPORTANT: Only count Regular tosses for team stats to avoid double-counting OT games
+    // OT tosses are still tracked in history for streak calculations
+    const isRegularToss = toss.toss_type === 'Regular';
+    
     [toss.winner, toss.loser].forEach(team => {
       if (!team || team === 'Unknown') return;
       if (!teamMap[team]) {
         teamMap[team] = {
           abbr: team,
-          totalTosses: 0,
-          tossWins: 0,
+          totalTosses: 0,  // Only Regular tosses
+          tossWins: 0,      // Only Regular toss wins
           defers: 0,
           receives: 0,
-          history: [],
+          history: [],      // All tosses (Regular + OT) for streak calculation
           gameWins: 0,
           gamesWithData: 0
         };
       }
-      teamMap[team].totalTosses++;
+      
+      // Always add to history for streak calculations
       teamMap[team].history.push(toss);
       
-      if (toss.winner === team) {
-        teamMap[team].tossWins++;
-        if (toss.winner_choice === 'Defer') teamMap[team].defers++;
-        if (toss.winner_choice === 'Receive') teamMap[team].receives++;
+      // Only count Regular tosses for matchup stats
+      if (isRegularToss) {
+        teamMap[team].totalTosses++;
         
-        // Check game outcome
-        const game = getGameForToss(toss);
-        if (game && game.home_score != null && game.away_score != null && toss.toss_type === 'Regular') {
-          teamMap[team].gamesWithData++;
-          const gameWinner = game.home_score > game.away_score ? game.home_team : game.away_team;
-          if (team === gameWinner) {
-            teamMap[team].gameWins++;
+        if (toss.winner === team) {
+          teamMap[team].tossWins++;
+          if (toss.winner_choice === 'Defer') teamMap[team].defers++;
+          if (toss.winner_choice === 'Receive') teamMap[team].receives++;
+          
+          // Check game outcome
+          const game = getGameForToss(toss);
+          if (game && game.home_score != null && game.away_score != null) {
+            teamMap[team].gamesWithData++;
+            const gameWinner = game.home_score > game.away_score ? game.home_team : game.away_team;
+            if (team === gameWinner) {
+              teamMap[team].gameWins++;
+            }
           }
         }
       }
