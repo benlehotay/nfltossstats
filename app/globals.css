@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700&display=swap');
 @import "tailwindcss";
 
 :root {
@@ -23,4 +24,79 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+/* ============================================================
+   ANIMATIONS
+   ============================================================ */
+
+@keyframes yardScroll {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+@keyframes coinSpin {
+  0%   { transform: rotateY(0deg); }
+  30%  { transform: rotateY(1440deg); }
+  35%  { transform: rotateY(1500deg); }
+  40%  { transform: rotateY(1440deg); }
+  45%  { transform: rotateY(1450deg); }
+  50%  { transform: rotateY(1440deg); }
+  100% { transform: rotateY(1440deg); }
+}
+
+@keyframes coinGlow {
+  0%, 100% { filter: drop-shadow(0 0 6px rgba(250,204,21,0.5)); }
+  50%       { filter: drop-shadow(0 0 18px rgba(250,204,21,0.9)); }
+}
+
+@keyframes headlinePulse {
+  0%, 100% { text-shadow: 0 0 20px rgba(96,165,250,0.3); }
+  50%       { text-shadow: 0 0 40px rgba(96,165,250,0.7), 0 0 80px rgba(96,165,250,0.3); }
+}
+
+@keyframes badgePop {
+  0%   { opacity: 0; transform: scale(0.7) translateY(4px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+@keyframes statFadeIn {
+  0%   { opacity: 0; transform: translateY(6px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeInUp {
+  0%   { opacity: 0; transform: translateY(20px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+/* ============================================================
+   UTILITY CLASSES
+   ============================================================ */
+
+.headline-text {
+  font-family: 'Bebas Neue', sans-serif;
+  animation: headlinePulse 3s ease-in-out infinite;
+}
+
+.coin-spin {
+  animation: coinSpin 8s ease-in-out infinite, coinGlow 2s ease-in-out infinite;
+  animation-delay: 0.5s;
+  transform-style: preserve-3d;
+}
+
+.yard-scroll {
+  animation: yardScroll 18s linear infinite;
+}
+
+.stat-badge {
+  animation: badgePop 0.4s cubic-bezier(0.34,1.56,0.64,1) both;
+}
+
+.stat-badge:nth-child(1) { animation-delay: 0.1s; }
+.stat-badge:nth-child(2) { animation-delay: 0.2s; }
+.stat-badge:nth-child(3) { animation-delay: 0.3s; }
+
+.fade-in-up {
+  animation: fadeInUp 0.6s ease-out both;
 }
