@@ -14,6 +14,29 @@ interface MatchupDetailsProps {
   onTeamClick: (abbr: string) => void;
 }
 
+// Ensures a team hex color is legible against the dark (#0f172a / #1a1f3a) background.
+// Converts to HSL and enforces minimum lightness, preserving team hue identity.
+function toReadable(hex: string | undefined): string {
+  if (!hex || hex.length < 7) return '#60a5fa';
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  const rN = r / 255, gN = g / 255, bN = b / 255;
+  const max = Math.max(rN, gN, bN), min = Math.min(rN, gN, bN);
+  let h = 0, s = 0;
+  const l = (max + min) / 2;
+  if (max !== min) {
+    const d = max - min;
+    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+    if (max === rN) h = (gN - bN) / d + (gN < bN ? 6 : 0);
+    else if (max === gN) h = (bN - rN) / d + 2;
+    else h = (rN - gN) / d + 4;
+    h /= 6;
+  }
+  const finalL = Math.max(l, 0.55);
+  return `hsl(${Math.round(h * 360)}, ${Math.round(s * 100)}%, ${Math.round(finalL * 100)}%)`;
+}
+
 const MatchupDetails = memo(function MatchupDetails({
   team1, team2, tosses, games, getTeamData, getGameForToss, onTeamClick
 }: MatchupDetailsProps) {
@@ -22,6 +45,10 @@ const MatchupDetails = memo(function MatchupDetails({
 
   const team1Data = getTeamData(team1);
   const team2Data = getTeamData(team2);
+
+  // Readable versions of each team's color — safe for text/bars on dark bg
+  const c1 = toReadable(team1Data?.primary_color);
+  const c2 = toReadable(team2Data?.primary_color);
 
   const matchupGames = tosses.filter(t =>
     (t.winner === team1 && t.loser === team2) ||
@@ -69,7 +96,7 @@ const MatchupDetails = memo(function MatchupDetails({
             </button>
           )}
           <button onClick={() => onTeamClick(team1)} className="hover:underline cursor-pointer transition">
-            <h3 className="text-2xl font-bold" style={{ color: team1Data?.primary_color || '#ffffff' }}>
+            <h3 className="text-2xl font-bold" style={{ color: c1 }}>
               {team1}
             </h3>
           </button>
@@ -88,7 +115,7 @@ const MatchupDetails = memo(function MatchupDetails({
             </button>
           )}
           <button onClick={() => onTeamClick(team2)} className="hover:underline cursor-pointer transition">
-            <h3 className="text-2xl font-bold" style={{ color: team2Data?.primary_color || '#ffffff' }}>
+            <h3 className="text-2xl font-bold" style={{ color: c2 }}>
               {team2}
             </h3>
           </button>
@@ -100,12 +127,12 @@ const MatchupDetails = memo(function MatchupDetails({
         <div
           className="rounded-lg p-6 text-center"
           style={{
-            backgroundColor: `${team1Data?.primary_color}22`,
-            borderColor: `${team1Data?.primary_color}44`,
+            backgroundColor: `${team1Data?.primary_color}18`,
+            borderColor: `${c1}55`,
             borderWidth: '1px'
           }}
         >
-          <div className="text-4xl font-bold" style={{ color: team1Data?.primary_color }}>
+          <div className="text-4xl font-bold" style={{ color: c1 }}>
             {team1TossWins}
           </div>
           <div className="text-sm text-gray-400 mt-2">{team1} Toss Wins</div>
@@ -117,12 +144,12 @@ const MatchupDetails = memo(function MatchupDetails({
         <div
           className="rounded-lg p-6 text-center"
           style={{
-            backgroundColor: `${team2Data?.primary_color}22`,
-            borderColor: `${team2Data?.primary_color}44`,
+            backgroundColor: `${team2Data?.primary_color}18`,
+            borderColor: `${c2}55`,
             borderWidth: '1px'
           }}
         >
-          <div className="text-4xl font-bold" style={{ color: team2Data?.primary_color }}>
+          <div className="text-4xl font-bold" style={{ color: c2 }}>
             {team2TossWins}
           </div>
           <div className="text-sm text-gray-400 mt-2">{team2} Toss Wins</div>
@@ -133,89 +160,75 @@ const MatchupDetails = memo(function MatchupDetails({
       {sortedGames.length > 0 ? (
         <div className="mt-6">
           <h4 className="text-lg font-bold text-white mb-4">Game History</h4>
-          <div className="space-y-2">
+          <div className="space-y-1.5">
+            {/* Column headers */}
+            <div className="flex items-center gap-3 px-4 py-1 mb-1">
+              <div className="text-[10px] text-gray-700 uppercase tracking-wider w-24 flex-shrink-0">Date</div>
+              <div className="hidden sm:block text-[10px] text-gray-700 uppercase tracking-wider w-12 flex-shrink-0">Type</div>
+              <div className="text-[10px] text-gray-700 uppercase tracking-wider flex-1">Toss Result</div>
+              <div className="text-[10px] text-gray-700 uppercase tracking-wider flex-shrink-0 text-right">Final</div>
+            </div>
             {sortedGames.map((toss, idx) => {
               const game = getGameForToss(toss);
               const tossWinner = toss.winner;
               const tossLoser = toss.loser;
               const isOT = toss.toss_type === 'Overtime';
+              const winnerColor = tossWinner === team1 ? c1 : c2;
 
               let gameWinner = null;
               let team1WonGame = null;
-              let team2WonGame = null;
 
               if (game && game.home_score != null && game.away_score != null) {
                 gameWinner = (game.home_score ?? 0) > (game.away_score ?? 0) ? game.home_team : game.away_team;
                 team1WonGame = gameWinner === team1;
-                team2WonGame = gameWinner === team2;
               }
 
               return (
                 <div
                   key={idx}
-                  className="bg-[#0f172a] p-4 rounded-lg border"
-                  style={{
-                    borderColor: tossWinner === team1 ? `${team1Data?.primary_color}44` : `${team2Data?.primary_color}44`
-                  }}
+                  className="flex items-center gap-3 px-4 py-2.5 rounded-lg"
+                  style={{ borderLeft: `2px solid ${winnerColor}`, backgroundColor: '#0f172a' }}
                 >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                      <div
-                        className="w-2 h-16 rounded"
-                        style={{
-                          backgroundColor: tossWinner === team1 ? team1Data?.primary_color : team2Data?.primary_color
-                        }}
-                      ></div>
-                      <div className="text-sm text-gray-400 w-32">
-                        {toss.game_date && formatGameDate(toss.game_date)}
-                        <div className="text-xs">{toss.season} Wk {toss.week}</div>
-                        <div className="text-xs">
-                          {toss.game_type}
-                          {isOT && <span className="text-yellow-400 ml-1">(OT)</span>}
-                        </div>
-                      </div>
-                      <div className="text-white">
-                        <div className="mb-1">
-                          <span
-                            className="font-bold"
-                            style={{ color: tossWinner === team1 ? team1Data?.primary_color : team2Data?.primary_color }}
-                          >
-                            {tossWinner}
-                          </span>
-                          {' won toss vs '}
-                          <span className="text-gray-400">{tossLoser}</span>
-                        </div>
-                        {toss.winner_choice && (
-                          <div className="text-xs text-gray-400">
-                            Chose to {toss.winner_choice}
-                          </div>
-                        )}
-                      </div>
+                  {/* Date + week */}
+                  <div className="text-xs text-gray-500 w-24 flex-shrink-0">
+                    <div className="text-gray-400 font-medium tabular-nums">
+                      {toss.game_date && formatGameDate(toss.game_date)}
                     </div>
-
-                    <div className="text-right">
-                      {game ? (
-                        <>
-                          <div className="text-sm text-gray-300 mb-1">
-                            Final: {game.home_team} {game.home_score} - {game.away_score} {game.away_team}
-                          </div>
-                          {team1WonGame !== null && (
-                            <div className="text-xs">
-                              <span
-                                className="font-bold"
-                                style={{ color: team1WonGame ? team1Data?.primary_color : team2Data?.primary_color }}
-                              >
-                                {team1WonGame ? team1 : team2} WON
-                              </span>
-                              {' game'}
-                            </div>
-                          )}
-                        </>
-                      ) : (
-                        <div className="text-xs text-gray-500">Game data unavailable</div>
-                      )}
+                    <div className="text-[11px] mt-0.5">
+                      {toss.season} · Wk {toss.week}
+                      {isOT && <span className="text-yellow-400 ml-1">OT</span>}
                     </div>
                   </div>
+
+                  {/* Game type */}
+                  <div className="hidden sm:block text-[10px] text-gray-600 w-12 flex-shrink-0 font-medium uppercase tracking-wide">
+                    {toss.game_type === 'Postseason' ? 'Playoff' : toss.game_type === 'Preseason' ? 'Pre' : 'Reg'}
+                  </div>
+
+                  {/* Toss result */}
+                  <div className="flex-1 min-w-0 text-sm">
+                    <span className="font-bold" style={{ color: winnerColor }}>{tossWinner}</span>
+                    <span className="text-gray-600 mx-1.5 text-xs">won toss</span>
+                    {toss.winner_choice && (
+                      <span className="text-[10px] text-gray-600">· chose to {toss.winner_choice}</span>
+                    )}
+                  </div>
+
+                  {/* Game result */}
+                  {game ? (
+                    <div className="text-right flex-shrink-0">
+                      <div className="text-xs text-gray-500 tabular-nums">
+                        {game.home_team} {game.home_score}–{game.away_score} {game.away_team}
+                      </div>
+                      {team1WonGame !== null && (
+                        <div className="text-[10px] font-bold mt-0.5" style={{ color: team1WonGame ? c1 : c2 }}>
+                          {team1WonGame ? team1 : team2} won
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="text-[10px] text-gray-700 flex-shrink-0">—</div>
+                  )}
                 </div>
               );
             })}

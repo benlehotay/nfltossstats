@@ -763,7 +763,15 @@ const TeamDetailView = memo(function TeamDetailView({
             No games found in selected date range
           </div>
         ) : (
-          <div className="space-y-2">
+          <div className="space-y-1.5">
+            {/* Column headers */}
+            <div className="flex items-center gap-3 px-4 py-1 mb-1">
+              <div className="text-[10px] text-gray-700 uppercase tracking-wider w-20 sm:w-24 flex-shrink-0">Date</div>
+              <div className="hidden sm:block text-[10px] text-gray-700 uppercase tracking-wider w-10 flex-shrink-0">Type</div>
+              <div className="text-[10px] text-gray-700 uppercase tracking-wider flex-1">Opponent</div>
+              <div className="text-[10px] text-gray-700 uppercase tracking-wider flex-shrink-0">Toss</div>
+              <div className="text-[10px] text-gray-700 uppercase tracking-wider w-14 text-right flex-shrink-0">Score</div>
+            </div>
             {logMode === 'toss' ? (
               // COIN TOSS LOG - Show all tosses (Regular and OT separately)
               paginatedGames.map((toss: any, idx: number) => {
@@ -781,6 +789,9 @@ const TeamDetailView = memo(function TeamDetailView({
                     gameResult = teamAbbr === gameWinner ? 'won' : 'lost';
                   }
                 }
+
+                const myScore = game ? (game.home_team === teamAbbr ? game.home_score : game.away_score) : null;
+                const theirScore = game ? (game.home_team === teamAbbr ? game.away_score : game.home_score) : null;
 
                 return (
                   <div
@@ -802,48 +813,68 @@ const TeamDetailView = memo(function TeamDetailView({
                       };
                       setClickedCell(modalData);
                     }}
-                    className="w-full flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 p-3 md:p-4 bg-[#0f172a] rounded-lg hover:bg-[#1a1f3a] transition cursor-pointer"
+                    className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-[#111827] transition cursor-pointer"
+                    style={{ borderLeft: `2px solid ${isWinner ? '#22c55e' : '#ef4444'}`, backgroundColor: '#0f172a' }}
                   >
-                    <div className="flex items-center gap-2 sm:gap-4 min-w-0">
-                      <div className={`w-2 h-12 rounded flex-shrink-0 ${isWinner ? 'bg-green-500' : 'bg-red-500'}`}></div>
-                      <div className="text-xs sm:text-sm text-gray-400 w-24 sm:w-32 text-left flex-shrink-0">
+                    {/* Date + week */}
+                    <div className="text-xs text-gray-500 w-20 sm:w-24 flex-shrink-0">
+                      <div className="text-gray-400 font-medium tabular-nums">
                         {toss.game_date && formatGameDate(toss.game_date)}
-                        <div className="text-xs">{toss.season} Wk {toss.week}</div>
-                        <div className="text-xs">{toss.game_type}{toss.toss_type === 'Overtime' ? ' (OT)' : ''}</div>
                       </div>
-                      <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-                        <span className="text-white text-sm font-semibold">vs</span>
-                        {opponentData && (
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              onTeamClick(opponent);
-                            }}
-                            className="hover:opacity-75 transition flex-shrink-0"
-                          >
-                            <img src={opponentData.logo_url} alt={opponent} className="w-6 h-6 sm:w-8 sm:h-8 object-contain" />
-                          </button>
+                      <div className="text-[11px] mt-0.5">
+                        {toss.season} · Wk {toss.week}
+                        {toss.toss_type === 'Overtime' && (
+                          <span className="text-yellow-400 ml-1">OT</span>
                         )}
-                        <span className="text-white text-sm font-bold truncate">{opponent}</span>
                       </div>
                     </div>
-                    <div className="text-left sm:text-right flex-shrink-0">
-                      <div className={`font-bold text-xs sm:text-sm mb-1 ${isWinner ? 'text-green-400' : 'text-red-400'}`}>
-                        Toss: {isWinner ? 'WON' : 'LOST'}
-                        {isWinner && toss.winner_choice && (
-                          <span className="text-xs ml-1 sm:ml-2 text-gray-400">({toss.winner_choice})</span>
-                        )}
-                      </div>
-                      {game && (
-                        <div className={`font-bold text-xs sm:text-sm ${
-                          gameResult === 'tie' ? 'text-yellow-400' :
-                          gameResult === 'won' ? 'text-green-400' :
-                          'text-red-400'
-                        }`}>
-                          Game: {gameResult === 'tie' ? 'TIED' : (gameResult === 'won' ? 'WON' : 'LOST')} ({game.home_team === teamAbbr ? game.home_score : game.away_score}-{game.home_team === teamAbbr ? game.away_score : game.home_score})
-                        </div>
+
+                    {/* Game type */}
+                    <div className="hidden sm:block text-[10px] text-gray-600 w-10 flex-shrink-0 font-medium uppercase tracking-wide">
+                      {toss.game_type === 'Postseason' ? 'Playoff' : toss.game_type === 'Preseason' ? 'Pre' : 'Reg'}
+                    </div>
+
+                    {/* Opponent */}
+                    <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                      <span className="text-gray-600 text-[11px] font-medium uppercase tracking-wider">vs</span>
+                      {opponentData && (
+                        <button
+                          onClick={(e) => { e.stopPropagation(); onTeamClick(opponent); }}
+                          className="hover:opacity-75 transition flex-shrink-0"
+                        >
+                          <img src={opponentData.logo_url} alt={opponent} className="w-5 h-5 sm:w-6 sm:h-6 object-contain" />
+                        </button>
+                      )}
+                      <span className="text-white text-sm font-bold truncate">{opponent}</span>
+                    </div>
+
+                    {/* Toss result pill */}
+                    <div className={`flex-shrink-0 text-[10px] font-bold px-2 py-0.5 rounded tracking-wider whitespace-nowrap ${
+                      isWinner
+                        ? 'bg-green-500/10 text-green-400 border border-green-500/20'
+                        : 'bg-red-500/10 text-red-400 border border-red-500/20'
+                    }`}>
+                      {isWinner ? 'WIN' : 'LOSS'}
+                      {isWinner && toss.winner_choice && (
+                        <span className="ml-1 opacity-60 font-normal">· {toss.winner_choice}</span>
                       )}
                     </div>
+
+                    {/* Game score */}
+                    {game ? (
+                      <div className={`flex-shrink-0 text-xs font-bold w-14 text-right tabular-nums ${
+                        gameResult === 'won' ? 'text-green-400' :
+                        gameResult === 'lost' ? 'text-red-400' :
+                        'text-yellow-400'
+                      }`}>
+                        {gameResult === 'won' ? 'W' : gameResult === 'lost' ? 'L' : 'T'}
+                        {myScore != null && (
+                          <span className="text-gray-500 font-normal ml-0.5">{myScore}–{theirScore}</span>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="flex-shrink-0 w-14 text-right text-[10px] text-gray-700">—</div>
+                    )}
                   </div>
                 );
               })
@@ -868,6 +899,14 @@ const TeamDetailView = memo(function TeamDetailView({
                   }
                 }
 
+                const gameResultColor =
+                  gameResult === 'tie' ? '#eab308' :
+                  gameResult === 'won' ? '#22c55e' :
+                  gameResult === 'lost' ? '#ef4444' :
+                  '#6b7280';
+                const myScore = game ? (game.home_team === teamAbbr ? game.home_score : game.away_score) : null;
+                const theirScore = game ? (game.home_team === teamAbbr ? game.away_score : game.home_score) : null;
+
                 return (
                   <div
                     key={idx}
@@ -888,57 +927,69 @@ const TeamDetailView = memo(function TeamDetailView({
                       };
                       setClickedCell(modalData);
                     }}
-                    className="w-full flex items-center justify-between p-4 bg-[#0f172a] rounded-lg hover:bg-[#1a1f3a] transition cursor-pointer"
+                    className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-[#111827] transition cursor-pointer"
+                    style={{ borderLeft: `2px solid ${gameResultColor}`, backgroundColor: '#0f172a' }}
                   >
-                    <div className="flex items-center gap-4">
-                      <div className={`w-2 h-12 rounded ${
-                        gameResult === 'tie' ? 'bg-yellow-500' :
-                        gameResult === 'won' ? 'bg-green-500' :
-                        gameResult === 'lost' ? 'bg-red-500' :
-                        'bg-gray-500'
-                      }`}></div>
-                      <div className="text-sm text-gray-400 w-32 text-left">
+                    {/* Date + week */}
+                    <div className="text-xs text-gray-500 w-20 sm:w-24 flex-shrink-0">
+                      <div className="text-gray-400 font-medium tabular-nums">
                         {regularToss.game_date && formatGameDate(regularToss.game_date)}
-                        <div className="text-xs">{regularToss.season} Wk {regularToss.week}</div>
-                        <div className="text-xs">{regularToss.game_type}</div>
                       </div>
-                      <div className="flex items-center gap-3">
-                        <span className="text-white font-semibold">vs</span>
-                        {opponentData && (
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              onTeamClick(opponent);
-                            }}
-                            className="hover:opacity-75 transition"
-                          >
-                            <img src={opponentData.logo_url} alt={opponent} className="w-8 h-8 object-contain" />
-                          </button>
-                        )}
-                        <span className="text-white font-bold">{opponent}</span>
-                      </div>
+                      <div className="text-[11px] mt-0.5">{regularToss.season} · Wk {regularToss.week}</div>
                     </div>
-                    <div className="text-right">
-                      {game && (
-                        <div className={`font-bold text-lg mb-1 ${
-                          gameResult === 'tie' ? 'text-yellow-400' :
-                          gameResult === 'won' ? 'text-green-400' :
-                          'text-red-400'
+
+                    {/* Game type */}
+                    <div className="hidden sm:block text-[10px] text-gray-600 w-10 flex-shrink-0 font-medium uppercase tracking-wide">
+                      {regularToss.game_type === 'Postseason' ? 'Playoff' : regularToss.game_type === 'Preseason' ? 'Pre' : 'Reg'}
+                      {otToss && <span className="text-yellow-400 block">OT</span>}
+                    </div>
+
+                    {/* Opponent */}
+                    <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                      <span className="text-gray-600 text-[11px] font-medium uppercase tracking-wider">vs</span>
+                      {opponentData && (
+                        <button
+                          onClick={(e) => { e.stopPropagation(); onTeamClick(opponent); }}
+                          className="hover:opacity-75 transition flex-shrink-0"
+                        >
+                          <img src={opponentData.logo_url} alt={opponent} className="w-5 h-5 sm:w-6 sm:h-6 object-contain" />
+                        </button>
+                      )}
+                      <span className="text-white text-sm font-bold truncate">{opponent}</span>
+                    </div>
+
+                    {/* Toss result indicators */}
+                    <div className="flex items-center gap-1 flex-shrink-0">
+                      <div className={`text-[10px] font-bold px-2 py-0.5 rounded tracking-wider whitespace-nowrap border ${
+                        regularIsWinner
+                          ? 'bg-green-500/10 text-green-400 border-green-500/20'
+                          : 'bg-red-500/10 text-red-400 border-red-500/20'
+                      }`}>
+                        Toss {regularIsWinner ? 'W' : 'L'}
+                      </div>
+                      {otToss && (
+                        <div className={`text-[10px] font-bold px-2 py-0.5 rounded tracking-wider whitespace-nowrap border ${
+                          otIsWinner
+                            ? 'bg-green-500/10 text-green-400 border-green-500/20'
+                            : 'bg-red-500/10 text-red-400 border-red-500/20'
                         }`}>
-                          {gameResult === 'tie' ? 'TIED' : (gameResult === 'won' ? 'WON' : 'LOST')} {game.home_team === teamAbbr ? game.home_score : game.away_score}-{game.home_team === teamAbbr ? game.away_score : game.home_score}
+                          <span className="text-yellow-400">OT</span> {otIsWinner ? 'W' : 'L'}
                         </div>
                       )}
-                      <div className="text-xs text-gray-400">
-                        <span className={regularIsWinner ? 'text-green-400' : 'text-red-400'}>
-                          Toss: {regularIsWinner ? 'W' : 'L'}
-                        </span>
-                        {otToss && (
-                          <span className={`ml-2 ${otIsWinner ? 'text-green-400' : 'text-red-400'}`}>
-                            OT: {otIsWinner ? 'W' : 'L'}
-                          </span>
+                    </div>
+
+                    {/* Game score */}
+                    {game ? (
+                      <div className={`flex-shrink-0 text-sm font-bold w-14 text-right tabular-nums`}
+                        style={{ color: gameResultColor }}>
+                        {gameResult === 'won' ? 'W' : gameResult === 'lost' ? 'L' : gameResult === 'tie' ? 'T' : '—'}
+                        {myScore != null && (
+                          <span className="text-gray-500 font-normal text-xs ml-0.5">{myScore}–{theirScore}</span>
                         )}
                       </div>
-                    </div>
+                    ) : (
+                      <div className="flex-shrink-0 w-14 text-right text-[10px] text-gray-700">—</div>
+                    )}
                   </div>
                 );
               })

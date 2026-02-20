@@ -391,15 +391,23 @@ const RecordsView = memo(function RecordsView({
                                       week: toss.week
                                     });
                                   }}
-                                  className="w-full flex items-center gap-2 p-2 bg-[#1a1f3a] rounded-lg text-xs hover:bg-[#0f172a] transition"
+                                  className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-[#0f172a] transition text-sm"
+                                  style={{ borderLeft: `2px solid ${teamWonToss ? '#22c55e' : '#ef4444'}`, backgroundColor: '#1a1f3a' }}
                                 >
-                                  <div className={`w-1 h-8 rounded ${teamWonToss ? 'bg-green-500' : 'bg-red-500'}`}></div>
-                                  <div className="flex-1 text-left">
-                                    <div className="text-gray-400 text-[10px]">
-                                      {toss.game_date && formatGameDate(toss.game_date)}
-                                    </div>
-                                    <div className="text-white">{toss.season} Wk {toss.week}</div>
+                                  <div className="text-xs text-gray-500 w-20 flex-shrink-0">
+                                    <div className="text-gray-400 font-medium tabular-nums">{toss.game_date ? formatGameDate(toss.game_date) : '—'}</div>
+                                    <div className="text-[11px]">{toss.season} · Wk {toss.week}</div>
                                   </div>
+                                  <div className="flex-1 min-w-0">
+                                    <span className={`text-xs font-semibold ${teamWonToss ? 'text-green-400' : 'text-red-400'}`}>{toss.winner}</span>
+                                    <span className="text-gray-600 text-xs mx-1">won vs</span>
+                                    <span className="text-gray-400 text-xs">{toss.loser}</span>
+                                  </div>
+                                  {game && (
+                                    <div className="text-xs text-gray-500 tabular-nums flex-shrink-0">
+                                      {game.home_team} {game.home_score}–{game.away_score} {game.away_team}
+                                    </div>
+                                  )}
                                 </button>
                               );
                             })}
@@ -474,27 +482,22 @@ const RecordsView = memo(function RecordsView({
                                 week: toss.week
                               });
                             }}
-                            className="w-full flex items-center justify-between p-3 bg-[#1a1f3a] rounded-lg text-sm hover:bg-[#0f172a] transition cursor-pointer"
+                            className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-[#0f172a] transition text-sm"
+                            style={{ borderLeft: `2px solid ${teamWonToss ? '#22c55e' : '#ef4444'}`, backgroundColor: '#1a1f3a' }}
                           >
-                            <div className="flex items-center gap-4">
-                              <div className={`w-2 h-10 rounded ${teamWonToss ? 'bg-green-500' : 'bg-red-500'}`}></div>
-                              <div className="text-gray-400 w-28">
-                                {toss.game_date && formatGameDate(toss.game_date)}
-                                <div className="text-xs">{toss.season} Wk {toss.week}</div>
-                                <div className="text-xs">
-                                  {toss.game_type}
-                                  {isOT && <span className="text-yellow-400 ml-1">(OT)</span>}
-                                </div>
-                              </div>
-                              <div className="text-white">
-                                <span className={`font-bold ${teamWonToss ? 'text-green-400' : 'text-red-400'}`}>{toss.winner}</span>
-                                {' won toss vs '}
-                                <span>{toss.loser}</span>
-                              </div>
+                            <div className="text-xs text-gray-500 w-20 flex-shrink-0">
+                              <div className="text-gray-400 font-medium tabular-nums">{toss.game_date ? formatGameDate(toss.game_date) : '—'}</div>
+                              <div className="text-[11px]">{toss.season} · Wk {toss.week}</div>
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <span className={`text-xs font-semibold ${teamWonToss ? 'text-green-400' : 'text-red-400'}`}>{toss.winner}</span>
+                              <span className="text-gray-600 text-xs mx-1">won vs</span>
+                              <span className="text-gray-400 text-xs">{toss.loser}</span>
+                              {isOT && <span className="text-yellow-400 text-[10px] ml-1">OT</span>}
                             </div>
                             {game && (
-                              <div className="text-gray-400 text-xs">
-                                Final: {game.home_team} {game.home_score} - {game.away_score} {game.away_team}
+                              <div className="text-xs text-gray-500 tabular-nums flex-shrink-0">
+                                {game.home_team} {game.home_score}–{game.away_score} {game.away_team}
                               </div>
                             )}
                           </button>
@@ -610,8 +613,10 @@ const RecordsView = memo(function RecordsView({
             title="Longest Active Winning Streak"
             value={records.activeWinStreak.streak}
             team={records.activeWinStreak.team}
+            teams={records.activeWinStreak.teams}
             subtext="Current streak"
             games={records.activeWinStreak.games}
+            gamesByTeam={records.activeWinStreak.gamesByTeam}
             recordKey="active-win"
             getGameForToss={getGameForToss}
             getTeamData={getTeamData}
@@ -620,8 +625,10 @@ const RecordsView = memo(function RecordsView({
             title="Longest Active Losing Streak"
             value={records.activeLoseStreak.streak}
             team={records.activeLoseStreak.team}
+            teams={records.activeLoseStreak.teams}
             subtext="Current streak"
             games={records.activeLoseStreak.games}
+            gamesByTeam={records.activeLoseStreak.gamesByTeam}
             recordKey="active-lose"
             getGameForToss={getGameForToss}
             getTeamData={getTeamData}

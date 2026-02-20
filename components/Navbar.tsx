@@ -30,9 +30,10 @@ export default function Navbar() {
       <div className="max-w-[1600px] mx-auto px-4 md:px-6 py-3 md:py-4 relative">
         <div className="flex items-center justify-between">
 
-          {/* LEFT: Coin + site name */}
-          <Link href="/" className="flex items-center gap-3 md:gap-4">
-            <div style={{ perspective: '1000px' }} className="w-9 h-9 md:w-11 md:h-11 flex-shrink-0">
+          {/* LEFT: Coin + site name + badge pills */}
+          <Link href="/" className="flex items-center gap-3 md:gap-4 group">
+
+            <div style={{ perspective: '1000px' }} className="w-9 h-9 md:w-12 md:h-12 flex-shrink-0">
               <svg
                 className="coin-spin w-full h-full"
                 viewBox="0 0 48 48"
@@ -56,28 +57,48 @@ export default function Navbar() {
               </svg>
             </div>
 
-            <span
-              className="leading-none font-bold"
-              style={{
-                fontSize: 'clamp(1.4rem, 4vw, 2.1rem)',
-                fontFamily: "'Barlow Condensed', sans-serif",
-                letterSpacing: '0.02em',
-              }}
-            >
-              <span style={{
-                background: 'linear-gradient(135deg, #93c5fd 0%, #60a5fa 40%, #3b82f6 70%, #1d4ed8 100%)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                backgroundClip: 'text',
-              }}>NFLTossStats</span>
-              <span style={{ color: '#475569' }}>.com</span>
-            </span>
+            <div>
+              <h1
+                className="leading-none font-bold"
+                style={{ fontSize: 'clamp(1.5rem, 5vw, 2.4rem)', fontFamily: "'Barlow Condensed', sans-serif", letterSpacing: '0.02em' }}
+              >
+                <span style={{
+                  background: 'linear-gradient(135deg, #93c5fd 0%, #60a5fa 40%, #3b82f6 70%, #1d4ed8 100%)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  backgroundClip: 'text',
+                }}>NFLTossStats</span>
+                <span style={{ color: '#94a3b8', fontSize: 'clamp(1.1rem, 3.5vw, 1.8rem)' }}>.com</span>
+              </h1>
+
+              {/* Badge pills — visible sm+ */}
+              <div className="hidden sm:flex items-center gap-2 mt-0.5">
+                <span
+                  className="stat-badge inline-flex items-center gap-1 bg-yellow-500/10 border border-yellow-500/30 text-yellow-400 text-[10px] font-semibold tracking-wider px-2 py-0.5 rounded-full uppercase"
+                  style={{ fontFamily: "'Barlow Condensed', sans-serif" }}
+                >
+                  🏈 Every Toss
+                </span>
+                <span
+                  className="stat-badge inline-flex items-center gap-1 bg-blue-500/10 border border-blue-500/30 text-blue-400 text-[10px] font-semibold tracking-wider px-2 py-0.5 rounded-full uppercase"
+                  style={{ fontFamily: "'Barlow Condensed', sans-serif" }}
+                >
+                  📊 Every Season
+                </span>
+                <span
+                  className="stat-badge hidden md:inline-flex items-center gap-1 bg-green-500/10 border border-green-500/30 text-green-400 text-[10px] font-semibold tracking-wider px-2 py-0.5 rounded-full uppercase"
+                  style={{ fontFamily: "'Barlow Condensed', sans-serif" }}
+                >
+                  🏆 32 Teams
+                </span>
+              </div>
+            </div>
           </Link>
 
           {/* RIGHT: Nav links */}
           <nav className="flex gap-1.5 md:gap-2">
             {navLinks.map(({ href, label, icon }) => {
-              const isActive = pathname === href || pathname.startsWith(href);
+              const isActive = pathname === href || (href !== '/' && pathname.startsWith(href));
               return (
                 <Link
                   key={href}
@@ -87,7 +108,7 @@ export default function Navbar() {
                   className={`rounded-lg font-semibold tracking-wide transition-all duration-200 flex items-center gap-1.5
                     px-2 py-2 md:px-4 md:py-2 text-base md:text-sm
                     ${isActive
-                      ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/50'
+                      ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/50 scale-105'
                       : 'bg-[#1a1f3a] text-gray-400 hover:text-white hover:bg-[#252d4a] border border-gray-700/50'
                     }`}
                 >
