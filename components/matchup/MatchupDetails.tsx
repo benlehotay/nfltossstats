@@ -162,11 +162,11 @@ const MatchupDetails = memo(function MatchupDetails({
           <h4 className="text-lg font-bold text-white mb-4">Game History</h4>
           <div className="space-y-1.5">
             {/* Column headers */}
-            <div className="flex items-center gap-3 px-4 py-1 mb-1">
-              <div className="text-[10px] text-gray-700 uppercase tracking-wider w-24 flex-shrink-0">Date</div>
-              <div className="hidden sm:block text-[10px] text-gray-700 uppercase tracking-wider w-12 flex-shrink-0">Type</div>
-              <div className="text-[10px] text-gray-700 uppercase tracking-wider flex-1">Toss Result</div>
-              <div className="text-[10px] text-gray-700 uppercase tracking-wider flex-shrink-0 text-right">Final</div>
+            <div className="flex items-center gap-3 px-4 pb-2 mb-1 border-b border-gray-800/50">
+              <div className="text-[9px] font-bold tracking-widest text-gray-600 uppercase w-24 flex-shrink-0">Date</div>
+              <div className="hidden sm:block text-[9px] font-bold tracking-widest text-gray-600 uppercase w-12 flex-shrink-0">Type</div>
+              <div className="text-[9px] font-bold tracking-widest text-gray-600 uppercase flex-1">Toss</div>
+              <div className="text-[9px] font-bold tracking-widest text-gray-600 uppercase flex-shrink-0 w-16 text-right">Result</div>
             </div>
             {sortedGames.map((toss, idx) => {
               const game = getGameForToss(toss);
@@ -186,48 +186,50 @@ const MatchupDetails = memo(function MatchupDetails({
               return (
                 <div
                   key={idx}
-                  className="flex items-center gap-3 px-4 py-2.5 rounded-lg"
-                  style={{ borderLeft: `2px solid ${winnerColor}`, backgroundColor: '#0f172a' }}
+                  className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-[#111827] transition cursor-pointer"
+                  style={{ borderLeft: `3px solid ${winnerColor}`, backgroundColor: '#0f172a' }}
                 >
                   {/* Date + week */}
-                  <div className="text-xs text-gray-500 w-24 flex-shrink-0">
-                    <div className="text-gray-400 font-medium tabular-nums">
+                  <div className="w-24 flex-shrink-0">
+                    <div className="text-[11px] font-semibold text-gray-300 tabular-nums leading-tight">
                       {toss.game_date && formatGameDate(toss.game_date)}
                     </div>
-                    <div className="text-[11px] mt-0.5">
+                    <div className="text-[10px] text-gray-600 mt-0.5 leading-tight">
                       {toss.season} · Wk {toss.week}
                       {isOT && <span className="text-yellow-400 ml-1">OT</span>}
                     </div>
                   </div>
 
                   {/* Game type */}
-                  <div className="hidden sm:block text-[10px] text-gray-600 w-12 flex-shrink-0 font-medium uppercase tracking-wide">
-                    {toss.game_type === 'Postseason' ? 'Playoff' : toss.game_type === 'Preseason' ? 'Pre' : 'Reg'}
+                  <div className="hidden sm:block w-12 flex-shrink-0">
+                    <span className="text-[9px] font-bold tracking-widest text-gray-600 uppercase bg-gray-800/40 px-1.5 py-0.5 rounded-sm">
+                      {toss.game_type === 'Postseason' ? 'PLY' : toss.game_type === 'Preseason' ? 'PRE' : 'REG'}
+                    </span>
                   </div>
 
                   {/* Toss result */}
-                  <div className="flex-1 min-w-0 text-sm">
-                    <span className="font-bold" style={{ color: winnerColor }}>{tossWinner}</span>
-                    <span className="text-gray-600 mx-1.5 text-xs">won toss</span>
+                  <div className="flex-1 min-w-0">
+                    <span className="font-bold text-xs" style={{ color: winnerColor }}>{tossWinner}</span>
+                    <span className="text-gray-600 mx-1.5 text-[10px]">won toss</span>
                     {toss.winner_choice && (
-                      <span className="text-[10px] text-gray-600">· chose to {toss.winner_choice}</span>
+                      <span className="text-[10px] text-gray-600">· chose {toss.winner_choice}</span>
                     )}
                   </div>
 
                   {/* Game result */}
                   {game ? (
-                    <div className="text-right flex-shrink-0">
-                      <div className="text-xs text-gray-500 tabular-nums">
-                        {game.home_team} {game.home_score}–{game.away_score} {game.away_team}
-                      </div>
+                    <div className="text-right flex-shrink-0 w-16">
                       {team1WonGame !== null && (
-                        <div className="text-[10px] font-bold mt-0.5" style={{ color: team1WonGame ? c1 : c2 }}>
-                          {team1WonGame ? team1 : team2} won
+                        <div className="text-sm font-bold leading-none" style={{ color: team1WonGame ? c1 : c2 }}>
+                          {team1WonGame ? team1 : team2}
                         </div>
                       )}
+                      <div className="text-[10px] text-gray-600 tabular-nums mt-0.5">
+                        {game.home_score}–{game.away_score}
+                      </div>
                     </div>
                   ) : (
-                    <div className="text-[10px] text-gray-700 flex-shrink-0">—</div>
+                    <div className="text-[10px] text-gray-700 flex-shrink-0 w-16 text-right">—</div>
                   )}
                 </div>
               );

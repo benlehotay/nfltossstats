@@ -51,8 +51,9 @@ const AnalyticsView = memo(function AnalyticsView({
     ? Math.round((tossWinnerWonGame / tossesWithGames.length) * 100)
     : 0;
 
-  const deferCount = filteredTosses.filter(t => t.winner_choice === 'Defer').length;
-  const deferRate = filteredTosses.length > 0 ? Math.round((deferCount / filteredTosses.length) * 100) : 0;
+  const openingTossWins = filteredTosses.filter(t => t.toss_type === 'Regular');
+  const deferCount = openingTossWins.filter(t => t.winner_choice === 'Defer').length;
+  const deferRate = openingTossWins.length > 0 ? Math.round((deferCount / openingTossWins.length) * 100) : 0;
 
   const SortIcon = ({ column }: { column: string }) => {
     if (sortBy !== column) return <span className="text-gray-600">⇅</span>;
@@ -107,7 +108,7 @@ const AnalyticsView = memo(function AnalyticsView({
           <div className="text-3xl md:text-4xl font-bold text-blue-400">{winCorrelation}%</div>
         </div>
         <div className="bg-[#1a1f3a] p-4 md:p-6 rounded-xl border border-gray-800">
-          <div className="text-xs md:text-sm text-gray-400 mb-1">Defer Rate</div>
+          <div className="text-xs md:text-sm text-gray-400 mb-1">Defer Rate (Opening Toss)</div>
           <div className="text-3xl md:text-4xl font-bold text-purple-400">{deferRate}%</div>
         </div>
         <div className="bg-[#1a1f3a] p-4 md:p-6 rounded-xl border border-gray-800">
@@ -131,6 +132,7 @@ const AnalyticsView = memo(function AnalyticsView({
           <div className="flex items-center bg-[#0f172a] rounded-lg p-1 flex-shrink-0 self-start sm:self-auto">
             <button
               onClick={() => setTableView('table')}
+              aria-pressed={tableView === 'table'}
               className={`px-3 md:px-4 py-1.5 rounded-md text-xs md:text-sm font-medium transition ${
                 tableView === 'table'
                   ? 'bg-blue-600 text-white'
@@ -141,6 +143,7 @@ const AnalyticsView = memo(function AnalyticsView({
             </button>
             <button
               onClick={() => setTableView('streaks')}
+              aria-pressed={tableView === 'streaks'}
               className={`px-3 md:px-4 py-1.5 rounded-md text-xs md:text-sm font-medium transition ${
                 tableView === 'streaks'
                   ? 'bg-blue-600 text-white'
@@ -153,7 +156,7 @@ const AnalyticsView = memo(function AnalyticsView({
         </div>
         {tableView === 'table' && (
         <div className="overflow-x-auto">
-          <table className="w-full">
+          <table className="w-full" aria-label="NFL team coin toss statistics">
             <thead className="bg-[#0f172a] border-b border-gray-800">
               <tr>
                 <th className="px-3 md:px-4 py-3 text-left">
@@ -190,7 +193,7 @@ const AnalyticsView = memo(function AnalyticsView({
                 </th>
                 <th className="px-2 md:px-4 py-3 text-center">
                   <button onClick={() => onSort('currentStreak')} className="flex items-center justify-center gap-1 md:gap-2 text-xs font-bold text-gray-400 uppercase hover:text-white transition w-full">
-                    Streak <SortIcon column="currentStreak" />
+                    Toss Streak <SortIcon column="currentStreak" />
                   </button>
                 </th>
                 <th className="px-2 md:px-4 py-3 text-center w-10 md:w-16">
@@ -306,8 +309,8 @@ const AnalyticsView = memo(function AnalyticsView({
                             e.stopPropagation();
                             onTeamClick(team.abbr);
                           }}
+                          aria-label={`View ${team.abbr} team page`}
                           className="text-gray-500 hover:text-blue-400 transition-colors px-2 py-1 rounded hover:bg-blue-900/20"
-                          title={`Go to ${team.abbr} Team Page`}
                         >
                           <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                             <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
@@ -428,35 +431,37 @@ const AnalyticsView = memo(function AnalyticsView({
                                             <tr>
                                               <td colSpan={7} className="bg-[#050810] p-0">
                                                 <div className="p-4">
-                                                  <h4 className="text-xs font-bold text-gray-400 uppercase mb-3">
+                                                  <h4 className="text-xs font-bold text-gray-400 uppercase mb-2">
                                                     Individual Games: {team.abbr} vs {opp.abbr} ({oppGames.length} games)
                                                   </h4>
-                                                  <div className="space-y-2">
+                                                  <div className="flex items-center gap-3 px-4 pb-2 mb-1 border-b border-gray-800/50">
+                                                    <div className="text-[9px] font-bold tracking-widest text-gray-600 uppercase w-24 flex-shrink-0">Date</div>
+                                                    <div className="hidden sm:block text-[9px] font-bold tracking-widest text-gray-600 uppercase flex-shrink-0">Type</div>
+                                                    <div className="text-[9px] font-bold tracking-widest text-gray-600 uppercase flex-1">Toss</div>
+                                                    <div className="text-[9px] font-bold tracking-widest text-gray-600 uppercase flex-shrink-0 w-16 text-right">Result</div>
+                                                  </div>
+                                                  <div className="space-y-1.5">
                                                     {oppGames.map((toss, idx) => {
                                                       const game = getGameForToss(toss);
                                                       const teamWonToss = toss.winner === team.abbr;
                                                       const isOT = toss.toss_type === 'Overtime';
 
-                                                      let gameWinner = null;
-                                                      let teamWonGame = null;
+                                                      let gameResult: 'won' | 'lost' | 'tie' | null = null;
                                                       if (game && game.home_score != null && game.away_score != null) {
-                                                        gameWinner = (game.home_score ?? 0) > (game.away_score ?? 0) ? game.home_team : game.away_team;
-                                                        teamWonGame = gameWinner === team.abbr;
+                                                        if (game.home_score === game.away_score) {
+                                                          gameResult = 'tie';
+                                                        } else {
+                                                          const gw = (game.home_score ?? 0) > (game.away_score ?? 0) ? game.home_team : game.away_team;
+                                                          gameResult = gw === team.abbr ? 'won' : 'lost';
+                                                        }
                                                       }
 
                                                       return (
                                                         <div
                                                           key={idx}
-                                                          className="flex items-center justify-between p-3 bg-[#1a1f3a] rounded-lg text-sm hover:bg-[#0f172a] transition cursor-pointer"
+                                                          className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-[#1a1f3a] transition cursor-pointer"
+                                                          style={{ borderLeft: `3px solid ${teamWonToss ? '#22c55e' : '#ef4444'}`, backgroundColor: '#0f172a' }}
                                                           onClick={() => {
-                                                            let gameResult = null;
-                                                            if (game && game.home_score !== null) {
-                                                              if (game.home_score === game.away_score) {
-                                                                gameResult = 'tie';
-                                                              } else {
-                                                                gameResult = teamWonGame ? 'won' : 'lost';
-                                                              }
-                                                            }
                                                             setClickedGame({
                                                               ...toss,
                                                               game,
@@ -473,47 +478,47 @@ const AnalyticsView = memo(function AnalyticsView({
                                                             });
                                                           }}
                                                         >
-                                                          <div className="flex items-center gap-4">
-                                                            <div className={`w-2 h-12 rounded ${teamWonToss ? 'bg-green-500' : 'bg-red-500'}`}></div>
-                                                            <div className="text-gray-400 w-32">
+                                                          <div className="w-24 flex-shrink-0">
+                                                            <div className="text-[11px] font-semibold text-gray-300 tabular-nums leading-tight">
                                                               {toss.game_date && formatGameDate(toss.game_date)}
-                                                              <div className="text-xs">{toss.season} Wk {toss.week}</div>
-                                                              <div className="text-xs">
-                                                                {toss.game_type}
-                                                                {isOT && <span className="text-yellow-400 ml-1">(OT)</span>}
-                                                              </div>
                                                             </div>
-                                                            <div className="text-white">
-                                                              <div className="mb-1">
-                                                                <span className={`font-bold ${teamWonToss ? 'text-green-400' : 'text-gray-300'}`}>
-                                                                  {toss.winner}
-                                                                </span>
-                                                                {' won toss vs '}
-                                                                <span className={`${!teamWonToss ? 'text-red-400 font-bold' : 'text-gray-300'}`}>
-                                                                  {toss.loser}
-                                                                </span>
-                                                              </div>
-                                                              {toss.winner_choice && (
-                                                                <div className="text-xs text-gray-400">
-                                                                  Chose to {toss.winner_choice}
-                                                                </div>
-                                                              )}
+                                                            <div className="text-[10px] text-gray-600 mt-0.5 leading-tight">
+                                                              {toss.season} · Wk {toss.week}
+                                                              {isOT && <span className="text-yellow-400 ml-1">OT</span>}
                                                             </div>
                                                           </div>
-                                                          <div className="text-right">
-                                                            {game ? (
-                                                              <>
-                                                                <div className="text-sm text-gray-300 mb-1">
-                                                                  Final: {game.home_team} {game.home_score} - {game.away_score} {game.away_team}
-                                                                </div>
-                                                                <div className={`text-xs font-bold ${teamWonGame ? 'text-green-400' : 'text-red-400'}`}>
-                                                                  {team.abbr} {teamWonGame ? 'WON' : 'LOST'} game
-                                                                </div>
-                                                              </>
-                                                            ) : (
-                                                              <div className="text-xs text-gray-500">Game data unavailable</div>
+                                                          <div className="hidden sm:block flex-shrink-0">
+                                                            <span className="text-[9px] font-bold tracking-widest text-gray-600 uppercase bg-gray-800/40 px-1.5 py-0.5 rounded-sm">
+                                                              {toss.game_type === 'Postseason' ? 'PLY' : toss.game_type === 'Preseason' ? 'PRE' : 'REG'}
+                                                            </span>
+                                                          </div>
+                                                          <div className="flex-1 min-w-0">
+                                                            <span className={`font-bold text-xs ${teamWonToss ? 'text-green-400' : 'text-red-400'}`}>
+                                                              {toss.winner}
+                                                            </span>
+                                                            <span className="text-gray-600 mx-1.5 text-[10px]">won toss</span>
+                                                            <span className="text-gray-500 text-xs">{toss.loser}</span>
+                                                            {toss.winner_choice && (
+                                                              <span className="text-[10px] text-gray-600 ml-1">· chose {toss.winner_choice}</span>
                                                             )}
                                                           </div>
+                                                          {game ? (
+                                                            <div className="text-right flex-shrink-0 w-16">
+                                                              <div className={`text-sm font-bold leading-none ${
+                                                                gameResult === 'won' ? 'text-green-400' :
+                                                                gameResult === 'lost' ? 'text-red-400' :
+                                                                gameResult === 'tie' ? 'text-yellow-400' :
+                                                                'text-gray-600'
+                                                              }`}>
+                                                                {gameResult === 'won' ? 'W' : gameResult === 'lost' ? 'L' : gameResult === 'tie' ? 'T' : '—'}
+                                                              </div>
+                                                              <div className="text-[10px] text-gray-600 tabular-nums mt-0.5">
+                                                                {game.home_score}–{game.away_score}
+                                                              </div>
+                                                            </div>
+                                                          ) : (
+                                                            <div className="text-[10px] text-gray-700 flex-shrink-0 w-16 text-right">—</div>
+                                                          )}
                                                         </div>
                                                       );
                                                     })}
@@ -557,16 +562,18 @@ const AnalyticsView = memo(function AnalyticsView({
         {tableView === 'streaks' && (
           <div className="p-6">
             {/* Legend */}
-            <div className="flex items-center justify-center gap-6 mb-5 text-xs text-gray-400">
-              <div className="flex items-center gap-1.5">
-                <div className="w-4 h-3 rounded bg-gradient-to-l from-red-600 to-red-700"></div>
-                <span>Longest Loss Streak</span>
+            <div className="flex flex-col items-center gap-2 mb-5">
+              <p className="text-xs text-gray-600">Longest coin toss win &amp; loss streaks · click a team to view their page</p>
+              <div className="flex items-center justify-center gap-6 text-xs text-gray-400">
+                <div className="flex items-center gap-1.5">
+                  <div className="w-4 h-3 rounded bg-gradient-to-l from-red-600 to-red-700"></div>
+                  <span>Longest Toss Loss Streak</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <div className="w-4 h-3 rounded bg-gradient-to-r from-green-600 to-green-700"></div>
+                  <span>Longest Toss Win Streak</span>
+                </div>
               </div>
-              <div className="flex items-center gap-1.5">
-                <div className="w-4 h-3 rounded bg-gradient-to-r from-green-600 to-green-700"></div>
-                <span>Longest Win Streak</span>
-              </div>
-              <span className="text-gray-500">• Click a team logo to view their team page</span>
             </div>
 
             <div className="space-y-1">
@@ -687,6 +694,13 @@ const AnalyticsView = memo(function AnalyticsView({
             </div>
           </div>
         )}
+      </div>
+
+      {/* Footnotes */}
+      <div className="pt-4 border-t border-gray-800/40">
+        <p className="text-[10px] text-gray-700 leading-relaxed">
+          * Defer Rate is calculated as defers ÷ opening coin toss wins. Overtime tosses are excluded — the opening toss winner makes the strategic choice; OT toss outcomes are independent.
+        </p>
       </div>
     </div>
   );

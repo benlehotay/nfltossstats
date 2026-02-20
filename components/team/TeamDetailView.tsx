@@ -81,8 +81,9 @@ const TeamDetailView = memo(function TeamDetailView({
   const tossWinPct = filteredTeamTosses.length > 0 ? Math.round((tossWins / filteredTeamTosses.length) * 100) : 0;
 
   const winningTosses = filteredTeamTosses.filter(t => t.winner === teamAbbr);
-  const defers = winningTosses.filter(t => t.winner_choice === 'Defer').length;
-  const deferPct = tossWins > 0 ? Math.round((defers / tossWins) * 100) : 0;
+  const regularTossWins = winningTosses.filter(t => t.toss_type === 'Regular');
+  const defers = regularTossWins.filter(t => t.winner_choice === 'Defer').length;
+  const deferPct = regularTossWins.length > 0 ? Math.round((defers / regularTossWins.length) * 100) : 0;
 
   // Game win rate when winning toss
   const tossWinsWithGames = winningTosses.filter(t => {
@@ -327,6 +328,7 @@ const TeamDetailView = memo(function TeamDetailView({
       {/* Back Button */}
       <button
         onClick={() => router.back()}
+        aria-label="Go back to previous page"
         className="px-3 md:px-4 py-2 bg-[#1a1f3a] text-white text-sm md:text-base rounded-lg hover:bg-[#0f172a] transition"
       >
         ← Back
@@ -359,7 +361,7 @@ const TeamDetailView = memo(function TeamDetailView({
                 <div className="text-sm md:text-base lg:text-lg font-bold text-white">{teamData.division}</div>
               </div>
               <div className="px-3 md:px-4 py-1.5 md:py-2 bg-black/30 rounded-lg">
-                <div className="text-xs md:text-sm text-gray-400">Active Streak</div>
+                <div className="text-xs md:text-sm text-gray-400">Coin Toss Streak</div>
                 <div className={`text-sm md:text-base lg:text-lg font-bold ${
                   currentStreak > 0 ? 'text-green-400' :
                   currentStreak < 0 ? 'text-red-400' :
@@ -486,6 +488,7 @@ const TeamDetailView = memo(function TeamDetailView({
                       setSelectedGameTypes([...selectedGameTypes, type]);
                     }
                   }}
+                  aria-pressed={selectedGameTypes.includes(type)}
                   className={`px-3 py-2 rounded-md text-xs font-medium transition ${
                     selectedGameTypes.includes(type)
                       ? 'bg-blue-600 text-white'
@@ -742,6 +745,7 @@ const TeamDetailView = memo(function TeamDetailView({
           <div className="flex gap-2 bg-[#0f172a] rounded-lg p-1">
             <button
               onClick={() => setLogMode('toss')}
+              aria-pressed={logMode === 'toss'}
               className={`px-4 py-2 rounded-md font-medium transition ${
                 logMode === 'toss' ? 'bg-blue-600 text-white' : 'text-gray-400 hover:text-white'
               }`}
@@ -750,6 +754,7 @@ const TeamDetailView = memo(function TeamDetailView({
             </button>
             <button
               onClick={() => setLogMode('game')}
+              aria-pressed={logMode === 'game'}
               className={`px-4 py-2 rounded-md font-medium transition ${
                 logMode === 'game' ? 'bg-blue-600 text-white' : 'text-gray-400 hover:text-white'
               }`}
@@ -765,12 +770,12 @@ const TeamDetailView = memo(function TeamDetailView({
         ) : (
           <div className="space-y-1.5">
             {/* Column headers */}
-            <div className="flex items-center gap-3 px-4 py-1 mb-1">
-              <div className="text-[10px] text-gray-700 uppercase tracking-wider w-20 sm:w-24 flex-shrink-0">Date</div>
-              <div className="hidden sm:block text-[10px] text-gray-700 uppercase tracking-wider w-10 flex-shrink-0">Type</div>
-              <div className="text-[10px] text-gray-700 uppercase tracking-wider flex-1">Opponent</div>
-              <div className="text-[10px] text-gray-700 uppercase tracking-wider flex-shrink-0">Toss</div>
-              <div className="text-[10px] text-gray-700 uppercase tracking-wider w-14 text-right flex-shrink-0">Score</div>
+            <div className="flex items-center gap-3 px-4 pb-2 mb-1 border-b border-gray-800/50">
+              <div className="text-[9px] font-bold tracking-widest text-gray-600 uppercase w-20 sm:w-24 flex-shrink-0">Date</div>
+              <div className="hidden sm:block text-[9px] font-bold tracking-widest text-gray-600 uppercase w-10 flex-shrink-0">Type</div>
+              <div className="text-[9px] font-bold tracking-widest text-gray-600 uppercase flex-1">Opponent</div>
+              <div className="text-[9px] font-bold tracking-widest text-gray-600 uppercase flex-shrink-0">Toss</div>
+              <div className="text-[9px] font-bold tracking-widest text-gray-600 uppercase w-16 text-right flex-shrink-0">Result</div>
             </div>
             {logMode === 'toss' ? (
               // COIN TOSS LOG - Show all tosses (Regular and OT separately)
@@ -813,15 +818,15 @@ const TeamDetailView = memo(function TeamDetailView({
                       };
                       setClickedCell(modalData);
                     }}
-                    className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-[#111827] transition cursor-pointer"
-                    style={{ borderLeft: `2px solid ${isWinner ? '#22c55e' : '#ef4444'}`, backgroundColor: '#0f172a' }}
+                    className="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-[#111827] transition cursor-pointer"
+                    style={{ borderLeft: `3px solid ${isWinner ? '#22c55e' : '#ef4444'}`, backgroundColor: '#0f172a' }}
                   >
                     {/* Date + week */}
-                    <div className="text-xs text-gray-500 w-20 sm:w-24 flex-shrink-0">
-                      <div className="text-gray-400 font-medium tabular-nums">
+                    <div className="w-20 sm:w-24 flex-shrink-0">
+                      <div className="text-[11px] font-semibold text-gray-300 tabular-nums leading-tight">
                         {toss.game_date && formatGameDate(toss.game_date)}
                       </div>
-                      <div className="text-[11px] mt-0.5">
+                      <div className="text-[10px] text-gray-600 mt-0.5 leading-tight">
                         {toss.season} · Wk {toss.week}
                         {toss.toss_type === 'Overtime' && (
                           <span className="text-yellow-400 ml-1">OT</span>
@@ -830,8 +835,10 @@ const TeamDetailView = memo(function TeamDetailView({
                     </div>
 
                     {/* Game type */}
-                    <div className="hidden sm:block text-[10px] text-gray-600 w-10 flex-shrink-0 font-medium uppercase tracking-wide">
-                      {toss.game_type === 'Postseason' ? 'Playoff' : toss.game_type === 'Preseason' ? 'Pre' : 'Reg'}
+                    <div className="hidden sm:block w-10 flex-shrink-0">
+                      <span className="text-[9px] font-bold tracking-widest text-gray-600 uppercase bg-gray-800/40 px-1.5 py-0.5 rounded-sm">
+                        {toss.game_type === 'Postseason' ? 'PLY' : toss.game_type === 'Preseason' ? 'PRE' : 'REG'}
+                      </span>
                     </div>
 
                     {/* Opponent */}
@@ -862,18 +869,20 @@ const TeamDetailView = memo(function TeamDetailView({
 
                     {/* Game score */}
                     {game ? (
-                      <div className={`flex-shrink-0 text-xs font-bold w-14 text-right tabular-nums ${
-                        gameResult === 'won' ? 'text-green-400' :
-                        gameResult === 'lost' ? 'text-red-400' :
-                        'text-yellow-400'
-                      }`}>
-                        {gameResult === 'won' ? 'W' : gameResult === 'lost' ? 'L' : 'T'}
+                      <div className="flex-shrink-0 w-16 text-right">
+                        <div className={`text-sm font-bold leading-none ${
+                          gameResult === 'won' ? 'text-green-400' :
+                          gameResult === 'lost' ? 'text-red-400' :
+                          'text-yellow-400'
+                        }`}>
+                          {gameResult === 'won' ? 'W' : gameResult === 'lost' ? 'L' : 'T'}
+                        </div>
                         {myScore != null && (
-                          <span className="text-gray-500 font-normal ml-0.5">{myScore}–{theirScore}</span>
+                          <div className="text-[10px] text-gray-600 tabular-nums mt-0.5">{myScore}–{theirScore}</div>
                         )}
                       </div>
                     ) : (
-                      <div className="flex-shrink-0 w-14 text-right text-[10px] text-gray-700">—</div>
+                      <div className="flex-shrink-0 w-16 text-right text-[10px] text-gray-700">—</div>
                     )}
                   </div>
                 );
@@ -927,21 +936,25 @@ const TeamDetailView = memo(function TeamDetailView({
                       };
                       setClickedCell(modalData);
                     }}
-                    className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg hover:bg-[#111827] transition cursor-pointer"
-                    style={{ borderLeft: `2px solid ${gameResultColor}`, backgroundColor: '#0f172a' }}
+                    className="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-[#111827] transition cursor-pointer"
+                    style={{ borderLeft: `3px solid ${gameResultColor}`, backgroundColor: '#0f172a' }}
                   >
                     {/* Date + week */}
-                    <div className="text-xs text-gray-500 w-20 sm:w-24 flex-shrink-0">
-                      <div className="text-gray-400 font-medium tabular-nums">
+                    <div className="w-20 sm:w-24 flex-shrink-0">
+                      <div className="text-[11px] font-semibold text-gray-300 tabular-nums leading-tight">
                         {regularToss.game_date && formatGameDate(regularToss.game_date)}
                       </div>
-                      <div className="text-[11px] mt-0.5">{regularToss.season} · Wk {regularToss.week}</div>
+                      <div className="text-[10px] text-gray-600 mt-0.5 leading-tight">
+                        {regularToss.season} · Wk {regularToss.week}
+                        {otToss && <span className="text-yellow-400 ml-1">OT</span>}
+                      </div>
                     </div>
 
                     {/* Game type */}
-                    <div className="hidden sm:block text-[10px] text-gray-600 w-10 flex-shrink-0 font-medium uppercase tracking-wide">
-                      {regularToss.game_type === 'Postseason' ? 'Playoff' : regularToss.game_type === 'Preseason' ? 'Pre' : 'Reg'}
-                      {otToss && <span className="text-yellow-400 block">OT</span>}
+                    <div className="hidden sm:block w-10 flex-shrink-0">
+                      <span className="text-[9px] font-bold tracking-widest text-gray-600 uppercase bg-gray-800/40 px-1.5 py-0.5 rounded-sm">
+                        {regularToss.game_type === 'Postseason' ? 'PLY' : regularToss.game_type === 'Preseason' ? 'PRE' : 'REG'}
+                      </span>
                     </div>
 
                     {/* Opponent */}
@@ -980,15 +993,16 @@ const TeamDetailView = memo(function TeamDetailView({
 
                     {/* Game score */}
                     {game ? (
-                      <div className={`flex-shrink-0 text-sm font-bold w-14 text-right tabular-nums`}
-                        style={{ color: gameResultColor }}>
-                        {gameResult === 'won' ? 'W' : gameResult === 'lost' ? 'L' : gameResult === 'tie' ? 'T' : '—'}
+                      <div className="flex-shrink-0 w-16 text-right">
+                        <div className="text-sm font-bold leading-none" style={{ color: gameResultColor }}>
+                          {gameResult === 'won' ? 'W' : gameResult === 'lost' ? 'L' : gameResult === 'tie' ? 'T' : '—'}
+                        </div>
                         {myScore != null && (
-                          <span className="text-gray-500 font-normal text-xs ml-0.5">{myScore}–{theirScore}</span>
+                          <div className="text-[10px] text-gray-600 tabular-nums mt-0.5">{myScore}–{theirScore}</div>
                         )}
                       </div>
                     ) : (
-                      <div className="flex-shrink-0 w-14 text-right text-[10px] text-gray-700">—</div>
+                      <div className="flex-shrink-0 w-16 text-right text-[10px] text-gray-700">—</div>
                     )}
                   </div>
                 );

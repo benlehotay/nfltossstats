@@ -391,21 +391,21 @@ const RecordsView = memo(function RecordsView({
                                       week: toss.week
                                     });
                                   }}
-                                  className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-[#0f172a] transition text-sm"
-                                  style={{ borderLeft: `2px solid ${teamWonToss ? '#22c55e' : '#ef4444'}`, backgroundColor: '#1a1f3a' }}
+                                  className="w-full flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-[#0f172a] transition text-sm"
+                                  style={{ borderLeft: `3px solid ${teamWonToss ? '#22c55e' : '#ef4444'}`, backgroundColor: '#1a1f3a' }}
                                 >
-                                  <div className="text-xs text-gray-500 w-20 flex-shrink-0">
-                                    <div className="text-gray-400 font-medium tabular-nums">{toss.game_date ? formatGameDate(toss.game_date) : '—'}</div>
-                                    <div className="text-[11px]">{toss.season} · Wk {toss.week}</div>
+                                  <div className="w-20 flex-shrink-0">
+                                    <div className="text-[11px] font-semibold text-gray-300 tabular-nums leading-tight">{toss.game_date ? formatGameDate(toss.game_date) : '—'}</div>
+                                    <div className="text-[10px] text-gray-600 mt-0.5 leading-tight">{toss.season} · Wk {toss.week}</div>
                                   </div>
                                   <div className="flex-1 min-w-0">
-                                    <span className={`text-xs font-semibold ${teamWonToss ? 'text-green-400' : 'text-red-400'}`}>{toss.winner}</span>
-                                    <span className="text-gray-600 text-xs mx-1">won vs</span>
-                                    <span className="text-gray-400 text-xs">{toss.loser}</span>
+                                    <span className={`text-xs font-bold ${teamWonToss ? 'text-green-400' : 'text-red-400'}`}>{toss.winner}</span>
+                                    <span className="text-gray-600 text-[10px] mx-1.5">won toss</span>
+                                    <span className="text-gray-500 text-xs">{toss.loser}</span>
                                   </div>
                                   {game && (
-                                    <div className="text-xs text-gray-500 tabular-nums flex-shrink-0">
-                                      {game.home_team} {game.home_score}–{game.away_score} {game.away_team}
+                                    <div className="text-right flex-shrink-0 w-16">
+                                      <div className="text-[10px] text-gray-600 tabular-nums">{game.home_score}–{game.away_score}</div>
                                     </div>
                                   )}
                                 </button>
@@ -482,22 +482,24 @@ const RecordsView = memo(function RecordsView({
                                 week: toss.week
                               });
                             }}
-                            className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-[#0f172a] transition text-sm"
-                            style={{ borderLeft: `2px solid ${teamWonToss ? '#22c55e' : '#ef4444'}`, backgroundColor: '#1a1f3a' }}
+                            className="w-full flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-[#0f172a] transition text-sm"
+                            style={{ borderLeft: `3px solid ${teamWonToss ? '#22c55e' : '#ef4444'}`, backgroundColor: '#1a1f3a' }}
                           >
-                            <div className="text-xs text-gray-500 w-20 flex-shrink-0">
-                              <div className="text-gray-400 font-medium tabular-nums">{toss.game_date ? formatGameDate(toss.game_date) : '—'}</div>
-                              <div className="text-[11px]">{toss.season} · Wk {toss.week}</div>
+                            <div className="w-20 flex-shrink-0">
+                              <div className="text-[11px] font-semibold text-gray-300 tabular-nums leading-tight">{toss.game_date ? formatGameDate(toss.game_date) : '—'}</div>
+                              <div className="text-[10px] text-gray-600 mt-0.5 leading-tight">
+                                {toss.season} · Wk {toss.week}
+                                {isOT && <span className="text-yellow-400 ml-1">OT</span>}
+                              </div>
                             </div>
                             <div className="flex-1 min-w-0">
-                              <span className={`text-xs font-semibold ${teamWonToss ? 'text-green-400' : 'text-red-400'}`}>{toss.winner}</span>
-                              <span className="text-gray-600 text-xs mx-1">won vs</span>
-                              <span className="text-gray-400 text-xs">{toss.loser}</span>
-                              {isOT && <span className="text-yellow-400 text-[10px] ml-1">OT</span>}
+                              <span className={`text-xs font-bold ${teamWonToss ? 'text-green-400' : 'text-red-400'}`}>{toss.winner}</span>
+                              <span className="text-gray-600 text-[10px] mx-1.5">won toss</span>
+                              <span className="text-gray-500 text-xs">{toss.loser}</span>
                             </div>
                             {game && (
-                              <div className="text-xs text-gray-500 tabular-nums flex-shrink-0">
-                                {game.home_team} {game.home_score}–{game.away_score} {game.away_team}
+                              <div className="text-right flex-shrink-0 w-16">
+                                <div className="text-[10px] text-gray-600 tabular-nums">{game.home_score}–{game.away_score}</div>
                               </div>
                             )}
                           </button>
@@ -702,7 +704,7 @@ const RecordsView = memo(function RecordsView({
             getTeamData={getTeamData}
           />
           <RecordCard
-            title="Most Consecutive Defers"
+            title="Most Consecutive Defers (Opening Toss)"
             value={records.mostConsecutiveDefers.streak}
             team={records.mostConsecutiveDefers.team}
             subtext={`${records.mostConsecutiveDefers.startDate} - ${records.mostConsecutiveDefers.endDate}`}

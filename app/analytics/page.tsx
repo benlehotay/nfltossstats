@@ -190,6 +190,7 @@ export default function AnalyticsPage() {
                         setSelectedGameTypes([...selectedGameTypes, type]);
                       }
                     }}
+                    aria-pressed={selectedGameTypes.includes(type)}
                     className={`px-3 py-1.5 rounded-md text-xs font-medium transition ${
                       selectedGameTypes.includes(type)
                         ? 'bg-blue-600 text-white'
@@ -227,7 +228,8 @@ export default function AnalyticsPage() {
                     <button
                       key={abbr}
                       onClick={() => setSelectedTeams(selectedTeams.filter(t => t !== abbr))}
-                      className="px-2 py-0.5 bg-blue-600 text-white text-xs rounded-full hover:bg-blue-700"
+                      aria-label={`Remove ${abbr} filter`}
+                      className="px-2.5 py-1 bg-blue-600 text-white text-xs rounded-full hover:bg-blue-700 min-h-[28px]"
                     >
                       {abbr} ×
                     </button>

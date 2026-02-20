@@ -421,7 +421,7 @@ export function calculateAllRecords(
   let mostDefers: any = { team: '', streak: 0, games: [], startDate: '', endDate: '' };
 
   Object.keys(teamTosses).forEach(team => {
-    const wins = teamTosses[team].filter(t => t.winner === team);
+    const wins = teamTosses[team].filter(t => t.winner === team && t.toss_type === 'Regular');
     let currentStreak = 0;
     let currentGames: Toss[] = [];
     let maxStreak = 0;
