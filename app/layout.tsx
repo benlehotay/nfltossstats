@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Barlow_Condensed, Bebas_Neue } from "next/font/google";
 import "./globals.css";
 import { DataProvider } from "@/contexts/DataContext";
 import Navbar from "@/components/Navbar";
@@ -12,6 +12,20 @@ const geistSans = Geist({
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+});
+
+const barlowCondensed = Barlow_Condensed({
+  variable: "--font-barlow",
+  subsets: ["latin"],
+  weight: ["400", "600", "700"],
+  display: "swap",
+});
+
+const bebasNeue = Bebas_Neue({
+  variable: "--font-bebas",
+  subsets: ["latin"],
+  weight: "400",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -39,21 +53,12 @@ export const metadata: Metadata = {
     description:
       "Track every NFL coin toss across all 32 teams. Win rates, streaks, defer trends, matchup breakdowns, and records dating back through every season.",
     url: "https://www.nfltossstats.com",
-    images: [
-      {
-        url: "/og-image.png",
-        width: 1200,
-        height: 630,
-        alt: "NFLTossStats.com – NFL Coin Toss Statistics Database",
-      },
-    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "NFLTossStats.com – The Ultimate NFL Coin Toss Database",
     description:
       "Track every NFL coin toss across all 32 teams. Win rates, streaks, defer trends, and more.",
-    images: ["/og-image.png"],
   },
   alternates: {
     canonical: "/",
@@ -88,7 +93,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${barlowCondensed.variable} ${bebasNeue.variable} antialiased`}
       >
         {/* Skip to main content — visible only on keyboard focus */}
         <a

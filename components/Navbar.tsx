@@ -60,7 +60,7 @@ export default function Navbar() {
             <div>
               <h1
                 className="leading-none font-bold"
-                style={{ fontSize: 'clamp(1.5rem, 5vw, 2.4rem)', fontFamily: "'Barlow Condensed', sans-serif", letterSpacing: '0.02em' }}
+                style={{ fontSize: 'clamp(1.5rem, 5vw, 2.4rem)', fontFamily: "var(--font-barlow), sans-serif", letterSpacing: '0.02em' }}
               >
                 <span style={{
                   background: 'linear-gradient(135deg, #93c5fd 0%, #60a5fa 40%, #3b82f6 70%, #1d4ed8 100%)',
@@ -75,19 +75,19 @@ export default function Navbar() {
               <div className="hidden sm:flex items-center gap-2 mt-0.5">
                 <span
                   className="stat-badge inline-flex items-center gap-1 bg-yellow-500/10 border border-yellow-500/30 text-yellow-400 text-[10px] font-semibold tracking-wider px-2 py-0.5 rounded-full uppercase"
-                  style={{ fontFamily: "'Barlow Condensed', sans-serif" }}
+                  style={{ fontFamily: "var(--font-barlow), sans-serif" }}
                 >
                   🏈 Every Toss
                 </span>
                 <span
                   className="stat-badge inline-flex items-center gap-1 bg-blue-500/10 border border-blue-500/30 text-blue-400 text-[10px] font-semibold tracking-wider px-2 py-0.5 rounded-full uppercase"
-                  style={{ fontFamily: "'Barlow Condensed', sans-serif" }}
+                  style={{ fontFamily: "var(--font-barlow), sans-serif" }}
                 >
                   📊 Every Season
                 </span>
                 <span
                   className="stat-badge hidden md:inline-flex items-center gap-1 bg-green-500/10 border border-green-500/30 text-green-400 text-[10px] font-semibold tracking-wider px-2 py-0.5 rounded-full uppercase"
-                  style={{ fontFamily: "'Barlow Condensed', sans-serif" }}
+                  style={{ fontFamily: "var(--font-barlow), sans-serif" }}
                 >
                   🏆 32 Teams
                 </span>
@@ -105,7 +105,7 @@ export default function Navbar() {
                   href={href}
                   aria-label={label}
                   aria-current={isActive ? 'page' : undefined}
-                  style={{ fontFamily: "'Barlow Condensed', sans-serif" }}
+                  style={{ fontFamily: "var(--font-barlow), sans-serif" }}
                   className={`rounded-lg font-semibold tracking-wide transition-all duration-200 flex items-center gap-1.5
                     px-2.5 py-2.5 md:px-4 md:py-2 text-base md:text-sm min-h-[44px] md:min-h-0
                     ${isActive

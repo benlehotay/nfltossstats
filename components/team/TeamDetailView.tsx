@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo, memo } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { formatGameDate } from '@/lib/calculations';
 import { Toss, Game, Team } from '@/lib/types';
 import GameDetailModal from './GameDetailModal';
@@ -343,10 +344,13 @@ const TeamDetailView = memo(function TeamDetailView({
         }}
       >
         <div className="flex flex-col sm:flex-row items-center gap-4 md:gap-6 lg:gap-8">
-          <img
+          <Image
             src={teamData.logo_url}
             alt={teamData.name}
+            width={160}
+            height={160}
             className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 lg:w-40 lg:h-40 object-contain flex-shrink-0"
+            priority
           />
           <div className="text-center sm:text-left flex-1">
             <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-1 md:mb-2">{teamData.name}</h1>

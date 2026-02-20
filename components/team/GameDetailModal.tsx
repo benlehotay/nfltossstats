@@ -124,7 +124,7 @@ const GameDetailModal = memo(function GameDetailModal({ clickedCell, teamAbbr, g
           <div>
             <div
               className="text-[10px] font-semibold text-gray-500 uppercase tracking-widest mb-0.5"
-              style={{ fontFamily: "'Barlow Condensed', sans-serif" }}
+              style={{ fontFamily: "var(--font-barlow), sans-serif" }}
             >
               {gameTypeLabel}
               {dateStr ? ` · ${formatGameDate(dateStr)}` : ''}
@@ -132,7 +132,7 @@ const GameDetailModal = memo(function GameDetailModal({ clickedCell, teamAbbr, g
             <div
               className="text-base font-bold text-white"
               style={{
-                fontFamily: "'Barlow Condensed', sans-serif",
+                fontFamily: "var(--font-barlow), sans-serif",
                 letterSpacing: '0.02em',
               }}
             >
@@ -184,7 +184,7 @@ const GameDetailModal = memo(function GameDetailModal({ clickedCell, teamAbbr, g
                     className="font-bold leading-none mt-1.5"
                     style={{
                       fontSize: 'clamp(2.5rem, 8vw, 3.5rem)',
-                      fontFamily: "'Bebas Neue', 'Barlow Condensed', sans-serif",
+                      fontFamily: "var(--font-bebas), var(--font-barlow), sans-serif",
                       color:
                         (homeScore ?? 0) > (awayScore ?? 0)
                           ? '#22c55e'
@@ -252,7 +252,7 @@ const GameDetailModal = memo(function GameDetailModal({ clickedCell, teamAbbr, g
                     className="font-bold leading-none mt-1.5"
                     style={{
                       fontSize: 'clamp(2.5rem, 8vw, 3.5rem)',
-                      fontFamily: "'Bebas Neue', 'Barlow Condensed', sans-serif",
+                      fontFamily: "var(--font-bebas), var(--font-barlow), sans-serif",
                       color:
                         (awayScore ?? 0) > (homeScore ?? 0)
                           ? '#22c55e'

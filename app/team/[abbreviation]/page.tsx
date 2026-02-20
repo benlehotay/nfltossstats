@@ -15,9 +15,10 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata(
-  { params }: { params: { abbreviation: string } }
+  { params }: { params: Promise<{ abbreviation: string }> }
 ): Promise<Metadata> {
-  const abbr = params.abbreviation.toUpperCase();
+  const { abbreviation } = await params;
+  const abbr = abbreviation.toUpperCase();
   const teams = await fetchTeams(); // deduplicated by Next.js fetch cache
   const team = teams.find(t => t.abbreviation === abbr);
 
@@ -39,9 +40,10 @@ export async function generateMetadata(
 }
 
 export default async function TeamPage(
-  { params }: { params: { abbreviation: string } }
+  { params }: { params: Promise<{ abbreviation: string }> }
 ) {
-  const abbr = params.abbreviation.toUpperCase();
+  const { abbreviation } = await params;
+  const abbr = abbreviation.toUpperCase();
 
   // Team-scoped queries — fetch only this team's data, not the full tables
   const [tosses, games, teams] = await Promise.all([

@@ -184,7 +184,7 @@ export default function LandingPage() {
 
         <h1
           className="headline-text leading-none mb-3"
-          style={{ fontSize: 'clamp(2.8rem, 9vw, 5rem)', fontFamily: "'Barlow Condensed', sans-serif", letterSpacing: '0.02em' }}
+          style={{ fontSize: 'clamp(2.8rem, 9vw, 5rem)', fontFamily: "var(--font-barlow), sans-serif", letterSpacing: '0.02em' }}
         >
           <span style={{
             background: 'linear-gradient(135deg, #93c5fd 0%, #60a5fa 40%, #3b82f6 70%, #1d4ed8 100%)',
@@ -197,15 +197,15 @@ export default function LandingPage() {
 
         <div className="flex items-center gap-2">
           <span className="stat-badge inline-flex items-center gap-1 bg-yellow-500/10 border border-yellow-500/30 text-yellow-400 text-[10px] font-semibold tracking-wider px-2 py-0.5 rounded-full uppercase"
-            style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>
+            style={{ fontFamily: "var(--font-barlow), sans-serif" }}>
             🏈 Every Toss
           </span>
           <span className="stat-badge inline-flex items-center gap-1 bg-blue-500/10 border border-blue-500/30 text-blue-400 text-[10px] font-semibold tracking-wider px-2 py-0.5 rounded-full uppercase"
-            style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>
+            style={{ fontFamily: "var(--font-barlow), sans-serif" }}>
             📊 Every Season
           </span>
           <span className="stat-badge inline-flex items-center gap-1 bg-green-500/10 border border-green-500/30 text-green-400 text-[10px] font-semibold tracking-wider px-2 py-0.5 rounded-full uppercase"
-            style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>
+            style={{ fontFamily: "var(--font-barlow), sans-serif" }}>
             🏆 32 Teams
           </span>
         </div>
@@ -262,7 +262,7 @@ export default function LandingPage() {
       <div className="w-full max-w-5xl mx-auto px-4 md:px-6 pb-16">
         <div className="border-t border-gray-800 pt-8 mb-2">
           <p className="text-[11px] text-gray-600 uppercase tracking-widest mb-4"
-            style={{ fontFamily: "'Barlow Condensed', sans-serif" }}>
+            style={{ fontFamily: "var(--font-barlow), sans-serif" }}>
             Explore the data
           </p>
         </div>
@@ -276,7 +276,7 @@ export default function LandingPage() {
               <div>
                 <div
                   className="font-bold text-white mb-0.5"
-                  style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '1.05rem', letterSpacing: '0.02em' }}
+                  style={{ fontFamily: "var(--font-barlow), sans-serif", fontSize: '1.05rem', letterSpacing: '0.02em' }}
                 >
                   {label}
                 </div>
@@ -328,7 +328,7 @@ function StatCard({ loading, category, value, label, context, accentColor, logo 
     >
       <div
         className="text-[10px] font-semibold tracking-widest text-gray-500 uppercase mb-4"
-        style={{ fontFamily: "'Barlow Condensed', sans-serif" }}
+        style={{ fontFamily: "var(--font-barlow), sans-serif" }}
       >
         {category}
       </div>
@@ -341,7 +341,7 @@ function StatCard({ loading, category, value, label, context, accentColor, logo 
         className="font-bold leading-none mb-2"
         style={{
           fontSize: 'clamp(3rem, 6vw, 4.5rem)',
-          fontFamily: "'Bebas Neue', 'Barlow Condensed', sans-serif",
+          fontFamily: "var(--font-bebas), var(--font-barlow), sans-serif",
           color: accentColor,
         }}
       >
@@ -412,7 +412,7 @@ function StreakCard({
       <div className="p-6 flex-1">
         <div
           className="text-[10px] font-semibold tracking-widest text-gray-500 uppercase mb-4"
-          style={{ fontFamily: "'Barlow Condensed', sans-serif" }}
+          style={{ fontFamily: "var(--font-barlow), sans-serif" }}
         >
           Longest active win streak
         </div>
@@ -439,7 +439,7 @@ function StreakCard({
               className="font-bold leading-none mb-1"
               style={{
                 fontSize: 'clamp(2.4rem, 5vw, 3.5rem)',
-                fontFamily: "'Bebas Neue', 'Barlow Condensed', sans-serif",
+                fontFamily: "var(--font-bebas), var(--font-barlow), sans-serif",
                 color: '#22c55e',
               }}
             >
@@ -485,7 +485,7 @@ function StreakCard({
       <div className="p-6 flex-1">
         <div
           className="text-[10px] font-semibold tracking-widest text-gray-500 uppercase mb-4"
-          style={{ fontFamily: "'Barlow Condensed', sans-serif" }}
+          style={{ fontFamily: "var(--font-barlow), sans-serif" }}
         >
           Longest active loss streak
         </div>
@@ -512,7 +512,7 @@ function StreakCard({
               className="font-bold leading-none mb-1"
               style={{
                 fontSize: 'clamp(2.4rem, 5vw, 3.5rem)',
-                fontFamily: "'Bebas Neue', 'Barlow Condensed', sans-serif",
+                fontFamily: "var(--font-bebas), var(--font-barlow), sans-serif",
                 color: '#ef4444',
               }}
             >

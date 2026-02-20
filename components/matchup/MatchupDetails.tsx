@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, memo } from 'react';
+import Image from 'next/image';
 import { formatGameDate } from '@/lib/calculations';
 import { Toss, Game, Team } from '@/lib/types';
 
@@ -92,7 +93,7 @@ const MatchupDetails = memo(function MatchupDetails({
               onClick={() => onTeamClick(team1)}
               className="cursor-pointer hover:opacity-80 transition"
             >
-              <img src={team1Data.logo_url} alt={team1} className="w-24 h-24 object-contain mb-3" />
+              <Image src={team1Data.logo_url} alt={team1} width={96} height={96} className="w-24 h-24 object-contain mb-3" />
             </button>
           )}
           <button onClick={() => onTeamClick(team1)} className="hover:underline cursor-pointer transition">
@@ -111,7 +112,7 @@ const MatchupDetails = memo(function MatchupDetails({
               onClick={() => onTeamClick(team2)}
               className="cursor-pointer hover:opacity-80 transition"
             >
-              <img src={team2Data.logo_url} alt={team2} className="w-24 h-24 object-contain mb-3" />
+              <Image src={team2Data.logo_url} alt={team2} width={96} height={96} className="w-24 h-24 object-contain mb-3" />
             </button>
           )}
           <button onClick={() => onTeamClick(team2)} className="hover:underline cursor-pointer transition">
