@@ -1,77 +1,83 @@
-'use client';
+import Link from 'next/link';
+import { notFound } from 'next/navigation';
+import type { Metadata } from 'next';
+import { fetchTeamTosses, fetchTeamGames, fetchTeams } from '@/lib/supabase-server';
+import TeamPageClient from './TeamPageClient';
 
-import { useMemo } from 'react';
-import { useParams, useRouter } from 'next/navigation';
-import { useData } from '@/contexts/DataContext';
-import { Toss } from '@/lib/types';
-import TeamDetailView from '@/components/team/TeamDetailView';
+// Revalidate cached pages once per day
+export const revalidate = 86400;
 
-export default function TeamPage() {
-  const params = useParams();
-  const router = useRouter();
-  const abbreviation = typeof params.abbreviation === 'string' ? params.abbreviation.toUpperCase() : '';
+// Pre-build static pages for all teams at deploy time.
+// Next.js will also handle any abbreviation not in this list dynamically.
+export async function generateStaticParams() {
+  const teams = await fetchTeams();
+  return teams.map(t => ({ abbreviation: t.abbreviation }));
+}
 
-  const { tosses, games, teams, loading, error } = useData();
+export async function generateMetadata(
+  { params }: { params: { abbreviation: string } }
+): Promise<Metadata> {
+  const abbr = params.abbreviation.toUpperCase();
+  const teams = await fetchTeams(); // deduplicated by Next.js fetch cache
+  const team = teams.find(t => t.abbreviation === abbr);
 
-  const getTeamData = useMemo(() => {
-    const map = new Map(teams.map(t => [t.abbreviation, t]));
-    return (abbr: string) => map.get(abbr);
-  }, [teams]);
+  if (!team) return { title: 'Team Not Found — NFLTossStats.com' };
 
-  const getGameForToss = useMemo(() => {
-    const map = new Map(games.map(g => [String(g.game_id), g]));
-    return (toss: Toss) => map.get(String(toss.game_id));
-  }, [games]);
+  const title = `${team.name} Coin Toss Stats — NFLTossStats.com`;
+  const description = `Complete NFL coin toss history for the ${team.name}. Win rates, defer trends, active streaks, and season-by-season breakdowns.`;
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-[#0a0e27] flex items-center justify-center">
-        <div className="text-xl text-white">Loading data...</div>
-      </div>
-    );
-  }
+  return {
+    title,
+    description,
+    alternates: { canonical: `/team/${abbr}` },
+    openGraph: {
+      title,
+      description,
+      url: `/team/${abbr}`,
+    },
+  };
+}
 
-  if (error) {
-    return (
-      <div className="min-h-screen bg-[#0a0e27] flex items-center justify-center">
-        <div className="max-w-md p-6 bg-[#1a1f3a] rounded-lg border-2 border-red-500">
-          <h2 className="text-xl font-bold text-red-500 mb-2">Connection Error</h2>
-          <p className="text-gray-300">{error}</p>
-        </div>
-      </div>
-    );
-  }
+export default async function TeamPage(
+  { params }: { params: { abbreviation: string } }
+) {
+  const abbr = params.abbreviation.toUpperCase();
 
-  const teamExists = teams.some(t => t.abbreviation === abbreviation);
-  if (!teamExists && teams.length > 0) {
+  // Team-scoped queries — fetch only this team's data, not the full tables
+  const [tosses, games, teams] = await Promise.all([
+    fetchTeamTosses(abbr),
+    fetchTeamGames(abbr),
+    fetchTeams(),
+  ]);
+
+  const team = teams.find(t => t.abbreviation === abbr);
+
+  if (!team) {
+    // Render an inline not-found state (avoids needing useRouter in a server component)
     return (
       <div className="min-h-screen bg-[#0a0e27] flex items-center justify-center">
         <div className="text-center">
           <div className="text-4xl font-bold text-gray-500 mb-4">Team Not Found</div>
-          <p className="text-gray-400 mb-6">"{abbreviation}" is not a valid team abbreviation.</p>
-          <button
-            onClick={() => router.push('/analytics')}
+          <p className="text-gray-400 mb-6">
+            &ldquo;{abbr}&rdquo; is not a valid team abbreviation.
+          </p>
+          <Link
+            href="/analytics"
             className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
           >
             Back to Analytics
-          </button>
+          </Link>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0e27]">
-      <div className="max-w-[1600px] mx-auto px-4 md:px-6 py-8">
-        <TeamDetailView
-          teamAbbr={abbreviation}
-          tosses={tosses}
-          games={games}
-          teams={teams}
-          getTeamData={getTeamData}
-          getGameForToss={getGameForToss}
-        />
-      </div>
-    </div>
+    <TeamPageClient
+      abbr={abbr}
+      tosses={tosses}
+      games={games}
+      teams={teams}
+    />
   );
 }
